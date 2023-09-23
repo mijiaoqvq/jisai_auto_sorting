@@ -1,0 +1,8 @@
+/home/mijiao/CLionProjects/SerialUltra/cmake-build-debug/CMakeFiles/t2.dir
+/home/mijiao/CLionProjects/SerialUltra/cmake-build-debug/CMakeFiles/t1.dir
+/home/mijiao/CLionProjects/SerialUltra/cmake-build-debug/CMakeFiles/t3.dir
+/home/mijiao/CLionProjects/SerialUltra/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/mijiao/CLionProjects/SerialUltra/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/mijiao/CLionProjects/SerialUltra/cmake-build-debug/thirdparty/serialib/CMakeFiles/serialib.dir
+/home/mijiao/CLionProjects/SerialUltra/cmake-build-debug/thirdparty/serialib/CMakeFiles/edit_cache.dir
+/home/mijiao/CLionProjects/SerialUltra/cmake-build-debug/thirdparty/serialib/CMakeFiles/rebuild_cache.dir
