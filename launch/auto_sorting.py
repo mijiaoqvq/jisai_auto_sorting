@@ -8,11 +8,6 @@ from ament_index_python.packages import get_package_share_directory
 
 
 def generate_launch_description():
-    t265 = IncludeLaunchDescription(
-      PythonLaunchDescriptionSource([os.path.join(
-         get_package_share_directory('realsense2_camera'), 'launch'),
-         '/rs_t265_launch.py']),
-      )
     return LaunchDescription([
         Node(
             package='body',
@@ -30,15 +25,24 @@ def generate_launch_description():
             emulate_tty=True,
         ),
         Node(
+            package='body',
+            executable='find_device_node',
+            emulate_tty=True,
+        ),
+        Node(
             package='eye',
             executable='camera_node',
             emulate_tty=True,
         ),
         Node(
-            package='body',
-            executable='find_device_node',
+            package='brain',
+            executable='control_node',
             emulate_tty=True,
         ),
-        t265
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource([os.path.join(
+                get_package_share_directory('realsense2_camera'), 'launch'),
+                '/rs_t265_launch.py']),
+        ),
     ])
     
