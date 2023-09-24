@@ -73,7 +73,6 @@ public:
             } else if (id == 0x21) {
                 armClient->async_send_request(info);
                 RCLCPP_INFO(this->get_logger(), "Found arm!");
-
             }
         }
     }

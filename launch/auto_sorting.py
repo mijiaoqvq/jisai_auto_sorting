@@ -39,6 +39,15 @@ def generate_launch_description():
             executable='control_node',
             emulate_tty=True,
         ),
+        Node(
+            package='detect',
+            executable='detect_node',
+            emulate_tty=True,
+            parameters=[
+                {'model_path': os.path.join(get_package_share_directory('detect'),'best.pt')}
+            ]
+        ),
+
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource([os.path.join(
                 get_package_share_directory('realsense2_camera'), 'launch'),
