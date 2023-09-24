@@ -11,7 +11,7 @@ setup(
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml', 'resource/best.pt']),
     ],
-    install_requires=['setuptools'],
+    install_requires=['setuptools', 'ultralytics'],
     zip_safe=True,
     maintainer='mijiao',
     maintainer_email='1012866210@qq.com',
