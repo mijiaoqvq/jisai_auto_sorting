@@ -17,11 +17,23 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(example_interfaces REQUIRED)
+find_package(tf2_msgs REQUIRED)
+find_package(interfaces REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
 
+set(dependencies
+        rclcpp
+        example_interfaces
+        tf2_msgs
+        interfaces
+)
+
 add_executable(control_node src/control_node.cpp)
+ament_target_dependencies(control_node ${dependencies})
 target_include_directories(control_node PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>)

@@ -19,6 +19,7 @@ public:
             RCLCPP_DEBUG(this->get_logger(), "Received port: " + req->port);
             communicate.open(req->port, 115200);
             communicate.spin(true);
+            //communicate.call(0x73);
         };
 
         service = this->create_service<interfaces::srv::DeviceInfo>("arm_port", serviceCallBack);

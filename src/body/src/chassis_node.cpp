@@ -1,3 +1,4 @@
+#include <opencv2/core/quaternion.hpp>
 #include "rclcpp/rclcpp.hpp"
 #include "example_interfaces/msg/int32.hpp"
 #include "interfaces/msg/pose.hpp"
@@ -43,14 +44,22 @@ public:
                 10,
                 [this](const tf2_msgs::msg::TFMessage::SharedPtr tf) {
                     auto translation = tf->transforms.data()->transform.translation;
-                    auto rotation = tf->transforms.data()->transform.rotation;
+                    auto _rotation = tf->transforms.data()->transform.rotation;
+                    cv::Quatf position;
+                    position.w = 0;
+                    position.x = translation.x;
+                    position.y = -translation.y;
+                    position.z = -translation.z;
+                    cv::Quatf rotation;
+                    rotation.w = _rotation.w;
+                    rotation.x = _rotation.x;
+                    rotation.y = _rotation.y;
+                    rotation.z = _rotation.z;
+                    rotation = rotation * cv::Quatf(0, 1, 0, 0);
+                    cv::Vec3f eulerAngle;
+                    eulerAngle = rotation.toEulerAngles(cv::QuatEnum::EulerAnglesType::INT_XYX);
 
-                    communicate.setTransform({(float) translation.x,
-                                              (float) translation.y,
-                                              (float) (atan2(2 * (rotation.x * rotation.w +
-                                                                  rotation.y * rotation.z),
-                                                             1 - 2 * (rotation.z * rotation.w +
-                                                                      rotation.z * rotation.w)))});
+                    communicate.setTransform({position.x,position.y,eulerAngle[0]});
                 }
         );
 
