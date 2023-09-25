@@ -17,6 +17,7 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(OpenCV REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(example_interfaces REQUIRED)
 find_package(tf2_msgs REQUIRED)
@@ -68,7 +69,7 @@ install(TARGETS qr_code_node
   DESTINATION lib/${PROJECT_NAME})
 
 add_executable(chassis_node src/chassis_node.cpp)
-target_link_libraries(chassis_node serialib)
+target_link_libraries(chassis_node serialib ${OpenCV_LIBS})
 ament_target_dependencies(chassis_node ${dependencies})
 target_include_directories(chassis_node PUBLIC
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
