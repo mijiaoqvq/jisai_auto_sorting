@@ -26,6 +26,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Pose.msg"
   "msg/ArmPose.msg"
   "msg/ItemInfo.msg"
+  "msg/SerialData.msg"
   "srv/DeviceInfo.srv"
   DEPENDENCIES
 )

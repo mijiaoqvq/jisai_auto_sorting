@@ -1,11 +1,13 @@
 #include "rclcpp/rclcpp.hpp"
 #include "example_interfaces/msg/int32.hpp"
+#include "interfaces/msg/serial_data.hpp"
 #include "interfaces/msg/arm_pose.hpp"
 #include "interfaces/srv/device_info.hpp"
 #include "SerialUltra/Communicate.h"
 
 class ArmNode : public rclcpp::Node {
 private:
+    rclcpp::Subscription<interfaces::msg::SerialData>::SharedPtr serialDataSubscription;
     rclcpp::Subscription<example_interfaces::msg::Int32>::SharedPtr lightSubscription;
     rclcpp::Service<interfaces::srv::DeviceInfo>::SharedPtr service;
     rclcpp::Subscription<interfaces::msg::ArmPose>::SharedPtr positionSubscription;
@@ -14,7 +16,7 @@ public:
     ArmNode() : Node("arm") {
         communicate.setNode(this);
 
-        communicate.registerCallBack(0x73, [this](const Data& data){
+        communicate.registerCallBack(0x73, [this](const Data& data) {
             switch (data.msg[0]) {
                 case 1:
 
@@ -36,6 +38,16 @@ public:
         };
 
         service = this->create_service<interfaces::srv::DeviceInfo>("arm_port", serviceCallBack);
+
+        serialDataSubscription = this->create_subscription<interfaces::msg::SerialData>(
+                "arm_serial",
+                10,
+                [this](const interfaces::msg::SerialData::SharedPtr serialData) {
+                    Data data = {};
+                    memcpy(&data, serialData->data.data(), sizeof(data));
+                    communicate.call(serialData->id, data);
+                }
+        );
 
         lightSubscription = this->create_subscription<example_interfaces::msg::Int32>(
                 "qr_code_info",
