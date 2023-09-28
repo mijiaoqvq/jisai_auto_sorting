@@ -145,6 +145,7 @@ namespace mp {
 
         void start() {
             running = true;
+            pSerial->flushReceiver();
         }
 
         void stop() {
