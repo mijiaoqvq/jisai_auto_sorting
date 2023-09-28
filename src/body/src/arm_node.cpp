@@ -14,12 +14,25 @@ public:
     ArmNode() : Node("arm") {
         communicate.setNode(this);
 
+        communicate.registerCallBack(0x73, [this](const Data& data){
+            switch (data.msg[0]) {
+                case 1:
+
+                    break;
+                case 2:
+
+                    break;
+                case 3:
+
+                    break;
+            }
+        });
+
         auto serviceCallBack = [this](const std::shared_ptr<interfaces::srv::DeviceInfo::Request> req,
                                       const std::shared_ptr<interfaces::srv::DeviceInfo::Response>) {
             RCLCPP_DEBUG(this->get_logger(), "Received port: " + req->port);
             communicate.open(req->port, 115200);
             communicate.spin(true);
-            //communicate.call(0x73);
         };
 
         service = this->create_service<interfaces::srv::DeviceInfo>("arm_port", serviceCallBack);

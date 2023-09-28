@@ -47,7 +47,7 @@ public:
                     auto _rotation = tf->transforms.data()->transform.rotation;
                     cv::Quatf position;
                     position.w = 0;
-                    position.x = translation.x;
+                    position.x = -translation.x;
                     position.y = -translation.y;
                     position.z = -translation.z;
                     cv::Quatf rotation;
@@ -55,9 +55,9 @@ public:
                     rotation.x = _rotation.x;
                     rotation.y = _rotation.y;
                     rotation.z = _rotation.z;
-                    rotation = rotation * cv::Quatf(0, 1, 0, 0);
+                    rotation = cv::Quatf(0, 1, 0, 0) * rotation;
                     cv::Vec3f eulerAngle;
-                    eulerAngle = rotation.toEulerAngles(cv::QuatEnum::EulerAnglesType::INT_XYX);
+                    eulerAngle = rotation.toEulerAngles(cv::QuatEnum::EulerAnglesType::INT_ZXZ);
 
                     communicate.setTransform({position.x,position.y,eulerAngle[0]});
                 }

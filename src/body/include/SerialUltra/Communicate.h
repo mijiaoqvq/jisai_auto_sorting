@@ -134,6 +134,12 @@ public:
         call(0x32, data);
         RCLCPP_INFO(node->get_logger(), "Sent chassis position success! %f %f %f", vx, vy, w);
     }
+
+    void reachArm(){
+        Data data = {};
+        data.msg[0] = 1;
+        call(0x73, data);
+    }
     
 };
 
