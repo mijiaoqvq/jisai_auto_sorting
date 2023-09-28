@@ -38,14 +38,14 @@ public:
                     interfaces::msg::SerialData serialData;
                     switch (status) {
                         case DISC:
-                            if (abs(itemInfo->y - 0.5) < 0.1){
+                            if (abs(itemInfo->y - 0.5) < 0.1) {
                                 serialData.id = 0x72;
                                 switch (itemInfo->id) {
                                     case RED_BOX:
                                     case RED_CUBE:
                                     case RED_SPHERE:
                                     case RED_TUBE:
-                                        if(color==RED){
+                                        if (color == RED) {
                                             serialData.data[0] = 1;
                                             armSerialDataPublisher->publish(serialData);
                                         }
@@ -54,7 +54,7 @@ public:
                                     case BLUE_SPHERE:
                                     case BLUE_TUBE:
                                     case BLUE_BOX:
-                                        if(color==BLUE){
+                                        if (color == BLUE) {
                                             serialData.data[0] = 1;
                                             armSerialDataPublisher->publish(serialData);
                                         }
@@ -72,14 +72,17 @@ public:
                                 serialData.data[0] = 1;
                                 armSerialDataPublisher->publish(serialData);
                             }
-                                break;
+                            break;
                         case PILING:
                             break;
                         case PLATFORM:
                             break;
+                        case NONE:
+                            break;
                     }
                 }
         );
+        armSerialDataPublisher = this->create_publisher<interfaces::msg::SerialData>("arm_serial", 10);
         disc();
     }
 
