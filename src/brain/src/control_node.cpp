@@ -187,7 +187,7 @@ public:
             chassisDataPublisher->publish(serialData);
             status = PLATFORM;
         });
-
+        th.detach();
     }
 
     void piling() {
