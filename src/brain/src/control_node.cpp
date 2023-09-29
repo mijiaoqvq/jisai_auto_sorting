@@ -39,7 +39,7 @@ public:
                     interfaces::msg::SerialData serialData;
                     switch (status) {
                         case DISC:
-                            if (abs(itemInfo->y - 0.5) < 0.1) {
+                            if (abs(itemInfo->x - 0.5) < 0.25) {
                                 serialData.id = 0x72;
                                 switch (itemInfo->id) {
                                     case RED_BOX:
@@ -75,6 +75,7 @@ public:
                             }
                             break;
                         case PILING:
+
                             break;
                         case PLATFORM:
                             break;
@@ -106,7 +107,11 @@ public:
     }
 
     void piling() {
-
+        interfaces::msg::SerialData serialData;
+        serialData.id = 0x73;
+        serialData.data[0] = 1;
+        armSerialDataPublisher->publish(serialData);
+        status = PILING;
     }
 
     void platform() {
