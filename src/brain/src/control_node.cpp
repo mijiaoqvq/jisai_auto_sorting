@@ -62,7 +62,7 @@ public:
                     cv::imshow("yellow", yellow);
                     cv::imshow("blue", blue);
                     cv::waitKey(1);
-                    if (1.0f * cv::countNonZero(red) / image.size().area() > 0.2) {
+                    if (color == RED && 1.0f * cv::countNonZero(red) / image.size().area() > 0.2) {
                         serialData.id = 0x72;
                         serialData.data[0] = 1;
                         armSerialDataPublisher->publish(serialData);
@@ -72,7 +72,7 @@ public:
                         serialData.data[0] = 2;
                         armSerialDataPublisher->publish(serialData);
                     }
-                    if (1.0f * cv::countNonZero(blue) / image.size().area() > 0.2) {
+                    if (color == BLUE && 1.0f * cv::countNonZero(blue) / image.size().area() > 0.2) {
                         serialData.id = 0x72;
                         serialData.data[0] = 1;
                         armSerialDataPublisher->publish(serialData);
