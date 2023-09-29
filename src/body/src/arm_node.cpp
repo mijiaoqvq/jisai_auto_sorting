@@ -20,6 +20,7 @@ public:
         communicate.registerCallBack(0x11, [this](const Data&) {
             example_interfaces::msg::Int32 flag;
             startPublisher->publish(flag);
+            RCLCPP_WARN(this->get_logger(), "START");
         });
 
         communicate.registerCallBack(0x73, [this](const Data& data) {
