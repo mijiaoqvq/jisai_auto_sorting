@@ -29,6 +29,7 @@ private:
     };
     rclcpp::Subscription<interfaces::msg::ItemInfo>::SharedPtr itemInfoSubscription;
     rclcpp::Publisher<interfaces::msg::SerialData>::SharedPtr armSerialDataPublisher;
+    rclcpp::Subscription<example_interfaces::msg::Int32>::SharedPtr startSubscription;
 public:
     ControlNode() : Node("control") {
         itemInfoSubscription = this->create_subscription<interfaces::msg::ItemInfo>(
@@ -83,11 +84,17 @@ public:
                 }
         );
         armSerialDataPublisher = this->create_publisher<interfaces::msg::SerialData>("arm_serial", 10);
-        disc();
+        startSubscription = this->create_subscription<example_interfaces::msg::Int32>(
+                "start",
+                10,
+                [this](const example_interfaces::msg::Int32::SharedPtr){
+                    run();
+                }
+        );
     }
 
     void run() {
-
+        disc();
     }
 
     void disc() {

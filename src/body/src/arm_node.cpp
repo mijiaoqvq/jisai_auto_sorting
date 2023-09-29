@@ -11,10 +11,16 @@ private:
     rclcpp::Subscription<example_interfaces::msg::Int32>::SharedPtr lightSubscription;
     rclcpp::Service<interfaces::srv::DeviceInfo>::SharedPtr service;
     rclcpp::Subscription<interfaces::msg::ArmPose>::SharedPtr positionSubscription;
+
+    rclcpp::Publisher<example_interfaces::msg::Int32>::SharedPtr startPublisher;
     Communicate communicate;
 public:
     ArmNode() : Node("arm") {
         communicate.setNode(this);
+        communicate.registerCallBack(0x11, [this](const Data&) {
+            example_interfaces::msg::Int32 flag;
+            startPublisher->publish(flag);
+        });
 
         communicate.registerCallBack(0x73, [this](const Data& data) {
             switch (data.msg[0]) {
@@ -69,6 +75,8 @@ public:
                     communicate.sendArmPosition(pose->x);
                 }
         );
+
+        startPublisher = this->create_publisher<example_interfaces::msg::Int32>("start", 10);
 
     }
 };

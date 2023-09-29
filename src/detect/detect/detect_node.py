@@ -38,8 +38,8 @@ class Detect(Node):
 
         if boxes.cls.shape[0] > 0:
             info = ItemInfo()
-            info.x = float((boxes.xyxy[0, 0] + boxes.xyxy[0, 2]) / 2) / img.size().width
-            info.y = float((boxes.xyxy[0, 1] + boxes.xyxy[0, 3]) / 2) / img.size().height
+            info.x = float((boxes.xyxy[0, 0] + boxes.xyxy[0, 2]) / 2) / 640
+            info.y = float((boxes.xyxy[0, 1] + boxes.xyxy[0, 3]) / 2) / 480
             info.id = int(boxes.cls[0])
             self.publisher.publish(info)
 
