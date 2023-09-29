@@ -47,9 +47,9 @@ public:
                 1,
                 [this](const sensor_msgs::msg::Image::SharedPtr imageMsg) {
                     interfaces::msg::SerialData serialData;
-                    cv_bridge::CvImage cvImage;
-                    cv_bridge::toCvCopy(imageMsg, sensor_msgs::image_encodings::BGR8);
-                    cv::Mat image = cvImage.image;
+                    cv_bridge::CvImagePtr cvImage;
+                    cvImage = cv_bridge::toCvCopy(imageMsg, sensor_msgs::image_encodings::BGR8);
+                    cv::Mat image = cvImage->image;
                     if (image.empty()) {
                         return;
                     }
