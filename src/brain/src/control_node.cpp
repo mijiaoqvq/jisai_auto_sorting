@@ -6,6 +6,7 @@
 #include "tf2_msgs/msg/tf_message.hpp"
 #include "sensor_msgs/msg/image.hpp"
 #include "cv_bridge/cv_bridge.h"
+#include "opencv2/opencv.hpp"
 
 class ControlNode : public rclcpp::Node {
 private:
@@ -49,7 +50,7 @@ public:
                     cv_bridge::CvImage cvImage;
                     cv_bridge::toCvCopy(imageMsg, sensor_msgs::image_encodings::BGR8);
                     cv::Mat image = cvImage.image;
-                    if(image.empty()){
+                    if (image.empty()) {
                         return;
                     }
                     cv::cvtColor(image, image, cv::COLOR_BGR2HSV);
@@ -57,6 +58,14 @@ public:
                     cv::inRange(image, redLow, redUp, red);
                     cv::inRange(image, yellowLow, yellowUp, yellow);
                     cv::inRange(image, blueLow, blueUp, blue);
+                    cv::imshow("red", red);
+                    cv::imshow("yellow", yellow);
+                    cv::imshow("blue", blue);
+                    cv::waitKey(1);
+                    RCLCPP_INFO(this->get_logger(), "%f %f %f",
+                                cv::countNonZero(red) / image.size().area(),
+                                cv::countNonZero(yellow) / image.size().area(),
+                                cv::countNonZero(blue) / image.size().area());
                     if (cv::countNonZero(red) / image.size().area() > 0.3) {
                         serialData.id = 0x72;
                         serialData.data[0] = 1;
