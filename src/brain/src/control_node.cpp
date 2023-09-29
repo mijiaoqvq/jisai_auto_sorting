@@ -93,6 +93,7 @@ public:
     }
 
     void run() {
+        RCLCPP_WARN(this->get_logger(), "START");
         disc();
     }
 
