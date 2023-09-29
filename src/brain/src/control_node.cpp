@@ -49,6 +49,9 @@ public:
                     cv_bridge::CvImage cvImage;
                     cv_bridge::toCvCopy(imageMsg, sensor_msgs::image_encodings::BGR8);
                     cv::Mat image = cvImage.image;
+                    if(image.empty()){
+                        return;
+                    }
                     cv::cvtColor(image, image, cv::COLOR_BGR2HSV);
                     cv::Mat red, yellow, blue;
                     cv::inRange(image, redLow, redUp, red);
