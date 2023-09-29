@@ -1,3 +1,5 @@
+#include <thread>
+#include <chrono>
 #include "rclcpp/rclcpp.hpp"
 #include "example_interfaces/msg/int32.hpp"
 #include "interfaces/msg/pose.hpp"
@@ -8,10 +10,12 @@
 #include "cv_bridge/cv_bridge.h"
 #include "opencv2/opencv.hpp"
 
+using namespace std::chrono_literals;
+
 class ControlNode : public rclcpp::Node {
 private:
     enum Status {
-        NONE, DISC, PILING, PLATFORM
+        NONE, DISC, PLATFORM, PILING
     } status;
     enum Color {
         RED, BLUE
@@ -32,6 +36,8 @@ private:
     };
     rclcpp::Subscription<interfaces::msg::ItemInfo>::SharedPtr itemInfoSubscription;
     rclcpp::Publisher<interfaces::msg::SerialData>::SharedPtr armSerialDataPublisher;
+    rclcpp::Publisher<interfaces::msg::SerialData>::SharedPtr chassisDataPublisher;
+    rclcpp::Subscription<interfaces::msg::SerialData>::SharedPtr chassisDataSubscription;
     rclcpp::Subscription<example_interfaces::msg::Int32>::SharedPtr startSubscription;
     rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr imageSubscription;
     std::array<int, 3> redLow = {0, 115, 80};
@@ -132,6 +138,25 @@ public:
                 }
         );
         armSerialDataPublisher = this->create_publisher<interfaces::msg::SerialData>("arm_serial", 10);
+        chassisDataPublisher = this->create_publisher<interfaces::msg::SerialData>("chassis_serial", 10);
+        chassisDataSubscription = this->create_subscription<interfaces::msg::SerialData>(
+                "chassis_data",
+                10,
+                [this](const interfaces::msg::SerialData::SharedPtr) {
+                    switch (status) {
+                        case NONE:
+                            status = DISC;
+                            disc();
+                            break;
+                        case DISC:
+                            break;
+                        case PLATFORM:
+                            break;
+                        case PILING:
+                            break;
+                    }
+                }
+        );
         startSubscription = this->create_subscription<example_interfaces::msg::Int32>(
                 "start",
                 10,
@@ -144,7 +169,9 @@ public:
 
     void run() {
         RCLCPP_WARN(this->get_logger(), "START");
-        disc();
+        interfaces::msg::SerialData serialData;
+        serialData.id = 0x3F;
+        chassisDataPublisher->publish(serialData);
     }
 
     void disc() {
@@ -152,7 +179,14 @@ public:
         serialData.id = 0x72;
         serialData.data[0] = 0;
         armSerialDataPublisher->publish(serialData);
-        status = DISC;
+        std::thread th([this](){
+            std::this_thread::sleep_for(40s);
+            interfaces::msg::SerialData serialData;
+            serialData.id = 0x3F;
+            chassisDataPublisher->publish(serialData);
+            status = PLATFORM;
+        });
+
     }
 
     void piling() {

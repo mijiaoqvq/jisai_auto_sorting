@@ -5,6 +5,7 @@
 #include "interfaces/srv/device_info.hpp"
 #include "SerialUltra/Communicate.h"
 #include "tf2_msgs/msg/tf_message.hpp"
+#include "interfaces/msg/serial_data.hpp"
 
 class ArmNode : public rclcpp::Node {
 private:
@@ -12,6 +13,9 @@ private:
     rclcpp::Subscription<tf2_msgs::msg::TFMessage>::SharedPtr transformSubscription;
     rclcpp::Subscription<interfaces::msg::Pose>::SharedPtr poseSubscription;
     rclcpp::Service<interfaces::srv::DeviceInfo>::SharedPtr service;
+
+    rclcpp::Subscription<interfaces::msg::SerialData>::SharedPtr serialDataSubscription;
+    rclcpp::Publisher<interfaces::msg::SerialData>::SharedPtr serialDataPublisher;
     Communicate communicate;
 public:
     ArmNode() : Node("chassis") {
@@ -20,6 +24,11 @@ public:
         auto serviceCallBack = [this](const std::shared_ptr<interfaces::srv::DeviceInfo::Request> req,
                                       const std::shared_ptr<interfaces::srv::DeviceInfo::Response>) {
             RCLCPP_INFO(this->get_logger(), "Received port: " + req->port);
+            communicate.registerCallBack(0x3F,[this](const Data&){
+                interfaces::msg::SerialData serialData;
+                serialData.id = 0x3F;
+                serialDataPublisher->publish(serialData);
+            });
             communicate.open(req->port, 115200);
             communicate.spin(true);
         };
@@ -59,7 +68,7 @@ public:
                     cv::Vec3f eulerAngle;
                     eulerAngle = rotation.toEulerAngles(cv::QuatEnum::EulerAnglesType::INT_ZXZ);
 
-                    communicate.setTransform({position.x,position.y,eulerAngle[0]});
+                    communicate.setTransform({position.x, position.y, eulerAngle[0]});
                 }
         );
 
@@ -70,6 +79,18 @@ public:
                     communicate.sendChassisPosition(pose->x, pose->y, pose->w);
                 }
         );
+
+        serialDataSubscription = this->create_subscription<interfaces::msg::SerialData>(
+                "chassis_serial",
+                10,
+                [this](const interfaces::msg::SerialData::SharedPtr serialData) {
+                    Data data = {};
+                    memcpy(&data, serialData->data.data(), sizeof(data));
+                    communicate.call(serialData->id, data);
+                }
+        );
+
+        serialDataPublisher = this->create_publisher<interfaces::msg::SerialData>("chassis_data", 10);
     }
 };
 
