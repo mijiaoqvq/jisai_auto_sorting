@@ -63,9 +63,9 @@ public:
                     cv::imshow("blue", blue);
                     cv::waitKey(1);
                     RCLCPP_INFO(this->get_logger(), "%f %f %f",
-                                cv::countNonZero(red) / image.size().area(),
-                                cv::countNonZero(yellow) / image.size().area(),
-                                cv::countNonZero(blue) / image.size().area());
+                                1.0f * cv::countNonZero(red) / image.size().area(),
+                                1.0f * cv::countNonZero(yellow) / image.size().area(),
+                                1.0f * cv::countNonZero(blue) / image.size().area());
                     if (cv::countNonZero(red) / image.size().area() > 0.3) {
                         serialData.id = 0x72;
                         serialData.data[0] = 1;
