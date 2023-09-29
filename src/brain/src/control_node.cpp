@@ -34,12 +34,12 @@ private:
     rclcpp::Publisher<interfaces::msg::SerialData>::SharedPtr armSerialDataPublisher;
     rclcpp::Subscription<example_interfaces::msg::Int32>::SharedPtr startSubscription;
     rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr imageSubscription;
-    std::array<int, 3> redLow = {100, 110, 180};
-    std::array<int, 3> redUp = {180, 255, 255};
-    std::array<int, 3> yellowLow = {10, 110, 180};
-    std::array<int, 3> yellowUp = {60, 255, 255};
-    std::array<int, 3> blueLow = {70, 80, 45};
-    std::array<int, 3> blueUp = {140, 255, 255};
+    std::array<int, 3> redLow = {0, 115, 80};
+    std::array<int, 3> redUp = {15, 255, 255};
+    std::array<int, 3> yellowLow = {16, 115, 80};
+    std::array<int, 3> yellowUp = {40, 255, 255};
+    std::array<int, 3> blueLow = {90, 115, 50};
+    std::array<int, 3> blueUp = {120, 255, 255};
 public:
     ControlNode() : Node("control") {
         imageSubscription = this->create_subscription<sensor_msgs::msg::Image>(
