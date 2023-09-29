@@ -83,7 +83,7 @@ public:
             ss.clear();
             info += temp + " ";
         }
-        RCLCPP_INFO(node->get_logger(), "%s", info.c_str());
+        RCLCPP_DEBUG(node->get_logger(), "%s", info.c_str());
         write(head, msg, tail);
     }
 
@@ -102,8 +102,8 @@ public:
         Data data = {};
         memcpy(&data, &transform, sizeof(transform));
         call(0x30, data);
-        RCLCPP_INFO(node->get_logger(), "Sent location success! %f %f %f", transform.x, transform.y,
-                    transform.rotation);
+//        RCLCPP_INFO(node->get_logger(), "Sent location success! %f %f %f", transform.x, transform.y,
+//                    transform.rotation);
     }
 
     void setTransform(Transform _transform) {
