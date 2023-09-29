@@ -145,6 +145,7 @@ public:
                 [this](const interfaces::msg::SerialData::SharedPtr) {
                     switch (status) {
                         case NONE:
+                            RCLCPP_WARN(this->get_logger(), "DISC ARRIVED！");
                             status = DISC;
                             disc();
                             break;
@@ -180,12 +181,14 @@ public:
         serialData.id = 0x72;
         serialData.data[0] = 0;
         armSerialDataPublisher->publish(serialData);
+        RCLCPP_WARN(this->get_logger(), "ARM REACHING！");
         std::thread th([this](){
             std::this_thread::sleep_for(40s);
             interfaces::msg::SerialData serialData;
             serialData.id = 0x3F;
             chassisDataPublisher->publish(serialData);
             status = PLATFORM;
+            RCLCPP_WARN(this->get_logger(), "DISC TIMES UP！");
         });
         th.detach();
     }
