@@ -39,7 +39,7 @@ public:
                     interfaces::msg::SerialData serialData;
                     switch (status) {
                         case DISC:
-                            if (abs(itemInfo->x - 0.5) < 0.25) {
+                            if (abs(itemInfo->x - 0.5) < 1) {
                                 serialData.id = 0x72;
                                 switch (itemInfo->id) {
                                     case RED_BOX:
