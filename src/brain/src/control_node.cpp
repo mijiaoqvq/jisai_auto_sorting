@@ -4,6 +4,8 @@
 #include "interfaces/msg/item_info.hpp"
 #include "interfaces/msg/serial_data.hpp"
 #include "tf2_msgs/msg/tf_message.hpp"
+#include "sensor_msgs/msg/image.hpp"
+#include "cv_bridge/cv_bridge.h"
 
 class ControlNode : public rclcpp::Node {
 private:
@@ -30,15 +32,53 @@ private:
     rclcpp::Subscription<interfaces::msg::ItemInfo>::SharedPtr itemInfoSubscription;
     rclcpp::Publisher<interfaces::msg::SerialData>::SharedPtr armSerialDataPublisher;
     rclcpp::Subscription<example_interfaces::msg::Int32>::SharedPtr startSubscription;
+    rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr imageSubscription;
+    std::array<int, 3> redLow = {100, 110, 180};
+    std::array<int, 3> redUp = {180, 255, 255};
+    std::array<int, 3> yellowLow = {10, 110, 180};
+    std::array<int, 3> yellowUp = {60, 255, 255};
+    std::array<int, 3> blueLow = {70, 80, 45};
+    std::array<int, 3> blueUp = {140, 255, 255};
 public:
     ControlNode() : Node("control") {
+        imageSubscription = this->create_subscription<sensor_msgs::msg::Image>(
+                "/arm_camera/img_raw",
+                1,
+                [this](const sensor_msgs::msg::Image::SharedPtr imageMsg) {
+                    interfaces::msg::SerialData serialData;
+                    cv_bridge::CvImage cvImage;
+                    cv_bridge::toCvCopy(imageMsg, sensor_msgs::image_encodings::BGR8);
+                    cv::Mat image = cvImage.image;
+                    cv::cvtColor(image, image, cv::COLOR_BGR2HSV);
+                    cv::Mat red, yellow, blue;
+                    cv::inRange(image, redLow, redUp, red);
+                    cv::inRange(image, yellowLow, yellowUp, yellow);
+                    cv::inRange(image, blueLow, blueUp, blue);
+                    if (cv::countNonZero(red) / image.size().area() > 0.3) {
+                        serialData.id = 0x72;
+                        serialData.data[0] = 1;
+                        armSerialDataPublisher->publish(serialData);
+                    }
+                    if (cv::countNonZero(yellow) / image.size().area() > 0.3) {
+                        serialData.id = 0x72;
+                        serialData.data[0] = 2;
+                        armSerialDataPublisher->publish(serialData);
+                    }
+                    if (cv::countNonZero(blue) / image.size().area() > 0.3) {
+                        serialData.id = 0x72;
+                        serialData.data[0] = 1;
+                        armSerialDataPublisher->publish(serialData);
+                    }
+                }
+        );
         itemInfoSubscription = this->create_subscription<interfaces::msg::ItemInfo>(
                 "item_info",
                 10,
-                [this](const interfaces::msg::ItemInfo::SharedPtr itemInfo) {
+                [this](const interfaces::msg::ItemInfo::SharedPtr) {
                     interfaces::msg::SerialData serialData;
                     switch (status) {
                         case DISC:
+                            /*
                             if (abs(itemInfo->x - 0.5) < 1) {
                                 serialData.id = 0x72;
                                 switch (itemInfo->id) {
@@ -71,6 +111,7 @@ public:
                                         break;
                                 }
                             }
+                             */
                             break;
                         case PILING:
 
@@ -86,10 +127,11 @@ public:
         startSubscription = this->create_subscription<example_interfaces::msg::Int32>(
                 "start",
                 10,
-                [this](const example_interfaces::msg::Int32::SharedPtr){
+                [this](const example_interfaces::msg::Int32::SharedPtr) {
                     run();
                 }
         );
+
     }
 
     void run() {
