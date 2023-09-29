@@ -172,6 +172,7 @@ public:
         interfaces::msg::SerialData serialData;
         serialData.id = 0x3F;
         chassisDataPublisher->publish(serialData);
+        status = NONE;
     }
 
     void disc() {
