@@ -70,8 +70,6 @@ public:
                                     case WHITE_SPHERE:
                                         break;
                                 }
-                                serialData.data[0] = 1;
-                                armSerialDataPublisher->publish(serialData);
                             }
                             break;
                         case PILING:
