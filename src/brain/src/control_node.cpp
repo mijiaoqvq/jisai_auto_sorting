@@ -62,21 +62,17 @@ public:
                     cv::imshow("yellow", yellow);
                     cv::imshow("blue", blue);
                     cv::waitKey(1);
-                    RCLCPP_INFO(this->get_logger(), "%f %f %f",
-                                1.0f * cv::countNonZero(red) / image.size().area(),
-                                1.0f * cv::countNonZero(yellow) / image.size().area(),
-                                1.0f * cv::countNonZero(blue) / image.size().area());
-                    if (cv::countNonZero(red) / image.size().area() > 0.2) {
+                    if (1.0f * cv::countNonZero(red) / image.size().area() > 0.2) {
                         serialData.id = 0x72;
                         serialData.data[0] = 1;
                         armSerialDataPublisher->publish(serialData);
                     }
-                    if (cv::countNonZero(yellow) / image.size().area() > 0.2) {
+                    if (1.0f * cv::countNonZero(yellow) / image.size().area() > 0.2) {
                         serialData.id = 0x72;
                         serialData.data[0] = 2;
                         armSerialDataPublisher->publish(serialData);
                     }
-                    if (cv::countNonZero(blue) / image.size().area() > 0.2) {
+                    if (1.0f * cv::countNonZero(blue) / image.size().area() > 0.2) {
                         serialData.id = 0x72;
                         serialData.data[0] = 1;
                         armSerialDataPublisher->publish(serialData);
