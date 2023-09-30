@@ -9,7 +9,7 @@ class ArmNode : public rclcpp::Node {
 private:
     rclcpp::Subscription<interfaces::msg::SerialData>::SharedPtr serialDataSubscription;
     rclcpp::Publisher<interfaces::msg::SerialData>::SharedPtr serialDataPublisher;
-    rclcpp::Subscription<example_interfaces::msg::Int32>::SharedPtr lightSubscription;
+//    rclcpp::Subscription<example_interfaces::msg::Int32>::SharedPtr lightSubscription;
     rclcpp::Service<interfaces::srv::DeviceInfo>::SharedPtr service;
     rclcpp::Subscription<interfaces::msg::ArmPose>::SharedPtr positionSubscription;
 
@@ -17,15 +17,15 @@ private:
     Communicate communicate;
 public:
     ArmNode() : Node("arm") {
-        communicate.registerCallBack(0x74, [this](const Data&){
-            interfaces::msg::SerialData serialData;
-            serialData.id = 0x74;
-            serialDataPublisher->publish(serialData);
-        });
         communicate.setNode(this);
         communicate.registerCallBack(0x11, [this](const Data&) {
             example_interfaces::msg::Int32 flag;
             startPublisher->publish(flag);
+        });
+        communicate.registerCallBack(0x74, [this](const Data&){
+            interfaces::msg::SerialData serialData;
+            serialData.id = 0x74;
+            serialDataPublisher->publish(serialData);
         });
 
         communicate.registerCallBack(0x73, [this](const Data& data) {
@@ -61,18 +61,18 @@ public:
                 }
         );
 
-        lightSubscription = this->create_subscription<example_interfaces::msg::Int32>(
-                "qr_code_info",
-                10,
-                [this](const example_interfaces::msg::Int32::SharedPtr color) {
-                    RCLCPP_DEBUG(this->get_logger(), "Received color info: " + std::to_string(color->data));
-                    if (color->data == 1) {
-                        communicate.changeLight(2);
-                    } else if (color->data == 2) {
-                        communicate.changeLight(0);
-                    }
-                }
-        );
+//        lightSubscription = this->create_subscription<example_interfaces::msg::Int32>(
+//                "qr_code_info",
+//                10,
+//                [this](const example_interfaces::msg::Int32::SharedPtr color) {
+//                    RCLCPP_DEBUG(this->get_logger(), "Received color info: " + std::to_string(color->data));
+//                    if (color->data == 1) {
+//                        communicate.changeLight(2);
+//                    } else if (color->data == 2) {
+//                        communicate.changeLight(0);
+//                    }
+//                }
+//        );
 
         positionSubscription = this->create_subscription<interfaces::msg::ArmPose>(
                 "arm_position",
