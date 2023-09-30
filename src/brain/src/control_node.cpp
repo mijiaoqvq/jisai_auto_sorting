@@ -15,7 +15,7 @@ using namespace std::chrono_literals;
 class ControlNode : public rclcpp::Node {
 private:
     enum Status {
-        NONE, DISC, PLATFORM, PILING
+        NONE, DISC, PLATFORM, PILING, DONE
     } status;
     enum Color {
         RED, BLUE
@@ -96,6 +96,8 @@ public:
                 [this](const interfaces::msg::ItemInfo::SharedPtr itemInfo) {
                     interfaces::msg::SerialData serialData;
                     switch (status) {
+                        case NONE:
+                            break;
                         case DISC:
                             break;
                         case PILING:
@@ -165,9 +167,8 @@ public:
                                         break;
                                 }
                             }
-
                             break;
-                        case NONE:
+                        case DONE:
                             break;
                     }
                 }
@@ -178,6 +179,7 @@ public:
                 "chassis_data",
                 10,
                 [this](const interfaces::msg::SerialData::SharedPtr) {
+                    interfaces::msg::SerialData serialData;
                     switch (status) {
                         case NONE:
                             RCLCPP_WARN(this->get_logger(), "DISC ARRIVED！");
@@ -190,8 +192,22 @@ public:
                             platform();
                             break;
                         case PLATFORM:
+                            RCLCPP_WARN(this->get_logger(), "PLATFORM FINISHED！");
+                            status = PILING;
+                            serialData.id = 0x74;
+                            serialData.data[0] = 1;
+                            armSerialDataPublisher->publish(serialData);
                             break;
                         case PILING:
+                            RCLCPP_WARN(this->get_logger(), "PILING ARRIVED！");
+                            piling();
+                            status = DONE;
+                            break;
+                        case DONE:
+                            serialData.id = 0x74;
+                            serialData.data[0] = 4;
+                            armSerialDataPublisher->publish(serialData);
+                            status = NONE;
                             break;
                     }
                 }
@@ -200,11 +216,18 @@ public:
                 "arm_data",
                 10,
                 [this](const interfaces::msg::SerialData::SharedPtr) {
-                    waiting = false;
-                    interfaces::msg::SerialData serialData;
-                    serialData.id = 0x31;
-                    chassisDataPublisher->publish(serialData);
-                    RCLCPP_WARN(this->get_logger(), "ARM FINISHED. CONTINUE MOVING!！");
+                    if(status == PLATFORM){
+                        waiting = false;
+                        interfaces::msg::SerialData serialData;
+                        serialData.id = 0x31;
+                        chassisDataPublisher->publish(serialData);
+                        RCLCPP_WARN(this->get_logger(), "ARM FINISHED. CONTINUE MOVING!！");
+                    }else if(status == PILING){
+                        interfaces::msg::SerialData serialData;
+                        serialData.id = 0x31;
+                        chassisDataPublisher->publish(serialData);
+                        RCLCPP_WARN(this->get_logger(), "ARM FINISHED. PILING MOVING!！");
+                    }
                 }
         );
         startSubscription = this->create_subscription<example_interfaces::msg::Int32>(
@@ -277,10 +300,10 @@ public:
 
     void piling() {
         interfaces::msg::SerialData serialData;
-        serialData.id = 0x73;
-        serialData.data[0] = 1;
+        serialData.id = 0x74;
+        serialData.data[0] = 2;
         armSerialDataPublisher->publish(serialData);
-        status = PILING;
+
     }
 
     void platform() {
