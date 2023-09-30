@@ -8,6 +8,7 @@
 class ArmNode : public rclcpp::Node {
 private:
     rclcpp::Subscription<interfaces::msg::SerialData>::SharedPtr serialDataSubscription;
+    rclcpp::Publisher<interfaces::msg::SerialData>::SharedPtr serialDataPublisher;
     rclcpp::Subscription<example_interfaces::msg::Int32>::SharedPtr lightSubscription;
     rclcpp::Service<interfaces::srv::DeviceInfo>::SharedPtr service;
     rclcpp::Subscription<interfaces::msg::ArmPose>::SharedPtr positionSubscription;
@@ -16,6 +17,11 @@ private:
     Communicate communicate;
 public:
     ArmNode() : Node("arm") {
+        communicate.registerCallBack(0x74, [this](const Data&){
+            interfaces::msg::SerialData serialData;
+            serialData.id = 0x74;
+            serialDataPublisher->publish(serialData);
+        });
         communicate.setNode(this);
         communicate.registerCallBack(0x11, [this](const Data&) {
             example_interfaces::msg::Int32 flag;
@@ -77,6 +83,8 @@ public:
         );
 
         startPublisher = this->create_publisher<example_interfaces::msg::Int32>("start", 10);
+
+        serialDataPublisher = this->create_publisher<interfaces::msg::SerialData>("arm_data", 10);
 
     }
 };
