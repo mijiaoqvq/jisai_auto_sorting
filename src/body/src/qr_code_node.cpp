@@ -22,9 +22,6 @@ private:
 
 public:
     QrCodeNode() : Node("qr_code") {
-        rclcpp::QoS qoS(10);
-        qoS.reliable();
-
         auto serviceCallBack = [this](const std::shared_ptr<interfaces::srv::DeviceInfo::Request> req,
                                       const std::shared_ptr<interfaces::srv::DeviceInfo::Response>) {
             pSerial = std::make_shared<serialib>();
@@ -36,7 +33,7 @@ public:
                 RCLCPP_DEBUG(this->get_logger(), "Serial port Open success!");
             }
 
-            publisher = this->create_publisher<example_interfaces::msg::Int32>("qr_code_info", 1);
+            publisher = this->create_publisher<example_interfaces::msg::Int32>("qr_code_info", 10);
             timer = this->create_wall_timer(
                     5ms, [this]() {
                         char buffer[MAX_READ_ONCE_CHAR];
