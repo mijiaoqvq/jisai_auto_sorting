@@ -290,7 +290,7 @@ public:
             serialData.id = 0x3F;
             chassisDataPublisher->publish(serialData);
             RCLCPP_WARN(this->get_logger(), "DISC TIMES UP！");
-            serialData.id = 0x73;
+            serialData.id = 0x72;
             serialData.data[0] = 3;
             armSerialDataPublisher->publish(serialData);
             RCLCPP_WARN(this->get_logger(), "ARM CHANGING!");
