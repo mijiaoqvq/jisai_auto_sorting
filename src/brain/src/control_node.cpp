@@ -54,7 +54,7 @@ public:
                 "/arm_camera/img_raw",
                 1,
                 [this](const sensor_msgs::msg::Image::SharedPtr imageMsg) {
-                    if (status != DISC && status != PILING) {
+                    if (status != DISC && status != DONE) {
                         return;
                     }
                     interfaces::msg::SerialData serialData;
@@ -232,7 +232,7 @@ public:
                         serialData.id = 0x31;
                         chassisDataPublisher->publish(serialData);
                         RCLCPP_WARN(this->get_logger(), "ARM FINISHED. CONTINUE MOVING!！");
-                    } else if (status == PILING) {
+                    } else if (status == DONE) {
                         interfaces::msg::SerialData serialData;
                         serialData.id = 0x31;
                         chassisDataPublisher->publish(serialData);
