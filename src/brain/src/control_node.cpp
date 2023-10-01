@@ -15,7 +15,7 @@ using namespace std::chrono_literals;
 class ControlNode : public rclcpp::Node {
 private:
     enum Status {
-        NONE, DISC, PLATFORM, PILING, DONE
+        NONE, DISC, PLATFORM, PILING, DONE, SORT
     } status;
     enum Color {
         RED, BLUE
@@ -54,7 +54,7 @@ public:
                 "/arm_camera/img_raw",
                 1,
                 [this](const sensor_msgs::msg::Image::SharedPtr imageMsg) {
-                    if (status == PLATFORM) {
+                    if (status != DISC && status != PILING) {
                         return;
                     }
                     interfaces::msg::SerialData serialData;
@@ -74,18 +74,18 @@ public:
                     cv::imshow("blue", blue);
                     cv::waitKey(1);
                     if (color == RED && (1.0f * cv::countNonZero(red) / image.size().area() > 0.2)) {
-                        serialData.id = 0x72;
-                        serialData.data[0] = 1;
+                        serialData.id = 0x72 + ((status == DISC) ? 0 : 2);
+                        serialData.data[0] = 1 + ((status == DISC) ? 0 : 2);
                         armSerialDataPublisher->publish(serialData);
                     }
                     if (1.0f * cv::countNonZero(yellow) / image.size().area() > 0.2) {
-                        serialData.id = 0x72;
-                        serialData.data[0] = 2;
+                        serialData.id = 0x72 + ((status == DISC) ? 0 : 2);
+                        serialData.data[0] = 2 + ((status == DISC) ? 0 : 10);
                         armSerialDataPublisher->publish(serialData);
                     }
                     if (color == BLUE && (1.0f * cv::countNonZero(blue) / image.size().area() > 0.2)) {
-                        serialData.id = 0x72;
-                        serialData.data[0] = 1;
+                        serialData.id = 0x72 + ((status == DISC) ? 0 : 2);
+                        serialData.data[0] = 1 + ((status == DISC) ? 0 : 2);
                         armSerialDataPublisher->publish(serialData);
                     }
                 }
@@ -110,7 +110,7 @@ public:
                                     serialData.id = 0x31;
                                     chassisDataPublisher->publish(serialData);
 
-                                    serialData.id = 0x74;
+                                    serialData.id = 0x73;
                                     serialData.data[0] = 0;
                                     armSerialDataPublisher->publish(serialData);
                                 };
@@ -120,7 +120,7 @@ public:
                                     serialData.id = 0x31;
                                     chassisDataPublisher->publish(serialData);
 
-                                    serialData.id = 0x74;
+                                    serialData.id = 0x73;
                                     serialData.data[0] = 1;
                                     armSerialDataPublisher->publish(serialData);
                                 };
@@ -130,7 +130,7 @@ public:
                                     serialData.id = 0x31;
                                     chassisDataPublisher->publish(serialData);
 
-                                    serialData.id = 0x74;
+                                    serialData.id = 0x73;
                                     serialData.data[0] = 2;
                                     armSerialDataPublisher->publish(serialData);
                                 };
@@ -170,6 +170,8 @@ public:
                             break;
                         case DONE:
                             break;
+                        case SORT:
+                            break;
                     }
                 }
         );
@@ -204,10 +206,18 @@ public:
                             status = DONE;
                             break;
                         case DONE:
+                            RCLCPP_WARN(this->get_logger(), "PILING FINISHED！");
                             serialData.id = 0x74;
                             serialData.data[0] = 4;
                             armSerialDataPublisher->publish(serialData);
-                            status = NONE;
+                            status = SORT;
+                            break;
+                        case SORT:
+                            RCLCPP_WARN(this->get_logger(), "WAREHOUSE ARRIVED！");
+                            serialData.id = 0x75;
+                            serialData.data[0] = 1;
+                            armSerialDataPublisher->publish(serialData);
+                            //status = NONE;
                             break;
                     }
                 }
@@ -216,17 +226,22 @@ public:
                 "arm_data",
                 10,
                 [this](const interfaces::msg::SerialData::SharedPtr) {
-                    if(status == PLATFORM){
+                    if (status == PLATFORM) {
                         waiting = false;
                         interfaces::msg::SerialData serialData;
                         serialData.id = 0x31;
                         chassisDataPublisher->publish(serialData);
                         RCLCPP_WARN(this->get_logger(), "ARM FINISHED. CONTINUE MOVING!！");
-                    }else if(status == PILING){
+                    } else if (status == PILING) {
                         interfaces::msg::SerialData serialData;
                         serialData.id = 0x31;
                         chassisDataPublisher->publish(serialData);
-                        RCLCPP_WARN(this->get_logger(), "ARM FINISHED. PILING MOVING!！");
+                        RCLCPP_WARN(this->get_logger(), "ARM PICKING CENTER BALL FINISHED. PILING MOVING!！");
+                    } else if(status == SORT){
+                        interfaces::msg::SerialData serialData;
+                        serialData.id = 0x31;
+                        chassisDataPublisher->publish(serialData);
+                        RCLCPP_WARN(this->get_logger(), "ARM TUBE SORT FINISHED!");
                     }
                 }
         );
@@ -241,23 +256,23 @@ public:
         qrInfoSubscription = this->create_subscription<example_interfaces::msg::Int32>(
                 "qr_code_info",
                 10,
-                [this](const example_interfaces::msg::Int32::SharedPtr id){
-                    if(waiting){
+                [this](const example_interfaces::msg::Int32::SharedPtr id) {
+                    if (waiting) {
                         interfaces::msg::SerialData serialData;
-                        serialData.id = 0x74;
-                        if(id->data == 1){
-                            if(color == BLUE){
+                        serialData.id = 0x73;
+                        if (id->data == 1) {
+                            if (color == BLUE) {
                                 RCLCPP_WARN(this->get_logger(), "COLOR RIGHT!！");
                                 serialData.data[0] = 4;
-                            }else{
+                            } else {
                                 RCLCPP_WARN(this->get_logger(), "COLOR WRONG!！");
                                 serialData.data[0] = 3;
                             }
-                        }else if(id->data == 2){
-                            if(color == RED){
+                        } else if (id->data == 2) {
+                            if (color == RED) {
                                 RCLCPP_WARN(this->get_logger(), "COLOR RIGHT!！");
                                 serialData.data[0] = 4;
-                            }else{
+                            } else {
                                 RCLCPP_WARN(this->get_logger(), "COLOR WRONG!！");
                                 serialData.data[0] = 3;
                             }
@@ -284,12 +299,14 @@ public:
         serialData.data[0] = 0;
         armSerialDataPublisher->publish(serialData);
         RCLCPP_WARN(this->get_logger(), "ARM REACHING！");
+
         std::thread th([this]() {
             std::this_thread::sleep_for(40s);
             interfaces::msg::SerialData serialData;
             serialData.id = 0x3F;
             chassisDataPublisher->publish(serialData);
             RCLCPP_WARN(this->get_logger(), "DISC TIMES UP！");
+
             serialData.id = 0x72;
             serialData.data[0] = 3;
             armSerialDataPublisher->publish(serialData);
@@ -303,7 +320,6 @@ public:
         serialData.id = 0x74;
         serialData.data[0] = 2;
         armSerialDataPublisher->publish(serialData);
-
     }
 
     void platform() {
