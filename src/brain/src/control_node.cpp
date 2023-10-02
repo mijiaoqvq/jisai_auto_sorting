@@ -234,12 +234,12 @@ public:
                         RCLCPP_WARN(this->get_logger(), "ARM FINISHED. CONTINUE MOVING!！");
                     } else if (status == DONE) {
                         interfaces::msg::SerialData serialData;
-                        serialData.id = 0x31;
+                        serialData.id = 0x3f;
                         chassisDataPublisher->publish(serialData);
                         RCLCPP_WARN(this->get_logger(), "ARM PICKING CENTER BALL FINISHED. PILING MOVING!！");
                     } else if(status == SORT){
                         interfaces::msg::SerialData serialData;
-                        serialData.id = 0x31;
+                        serialData.id = 0x3f;
                         chassisDataPublisher->publish(serialData);
                         RCLCPP_WARN(this->get_logger(), "ARM TUBE SORT FINISHED!");
                     }
