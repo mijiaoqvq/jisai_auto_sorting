@@ -6,12 +6,14 @@
 #include "SerialUltra/Communicate.h"
 #include "tf2_msgs/msg/tf_message.hpp"
 #include "interfaces/msg/serial_data.hpp"
+#include "geometry_msgs/msg/twist.hpp"
 
 class ArmNode : public rclcpp::Node {
 private:
     rclcpp::Subscription<example_interfaces::msg::Int32>::SharedPtr lightSubscription;
     rclcpp::Subscription<tf2_msgs::msg::TFMessage>::SharedPtr transformSubscription;
     rclcpp::Subscription<interfaces::msg::Pose>::SharedPtr poseSubscription;
+    rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr ctlSubscription;
     rclcpp::Service<interfaces::srv::DeviceInfo>::SharedPtr service;
 
     rclcpp::Subscription<interfaces::msg::SerialData>::SharedPtr serialDataSubscription;
@@ -24,7 +26,7 @@ public:
         auto serviceCallBack = [this](const std::shared_ptr<interfaces::srv::DeviceInfo::Request> req,
                                       const std::shared_ptr<interfaces::srv::DeviceInfo::Response>) {
             RCLCPP_INFO(this->get_logger(), "Received port: " + req->port);
-            communicate.registerCallBack(0x3F,[this](const Data&){
+            communicate.registerCallBack(0x3F, [this](const Data&) {
                 interfaces::msg::SerialData serialData;
                 serialData.id = 0x3F;
                 serialDataPublisher->publish(serialData);
@@ -87,6 +89,39 @@ public:
                     Data data = {};
                     memcpy(&data, serialData->data.data(), sizeof(data));
                     communicate.call(serialData->id, data);
+                }
+        );
+
+        ctlSubscription = this->create_subscription<geometry_msgs::msg::Twist>(
+                "/direction_ctl",
+                10,
+                [this](const geometry_msgs::msg::Twist::SharedPtr msg) {
+                    Data data = {};
+                    if(msg->linear.x > 0){
+                        data.msg[0]+=1;
+                        RCLCPP_INFO(this->get_logger(), "up");
+                    }
+                    if(msg->linear.x < 0){
+                        data.msg[0]-=1;
+                        RCLCPP_INFO(this->get_logger(), "down");
+                    }
+                    if(msg->linear.y > 0){
+                        data.msg[1]+=1;
+                        RCLCPP_INFO(this->get_logger(), "left");
+                    }
+                    if(msg->linear.y < 0){
+                        data.msg[1]-=1;
+                        RCLCPP_INFO(this->get_logger(), "right");
+                    }
+                    if(msg->angular.z > 0){
+                        data.msg[2]+=1;
+                        RCLCPP_INFO(this->get_logger(), "lt");
+                    }
+                    if(msg->angular.z < 0){
+                        data.msg[2]-=1;
+                        RCLCPP_INFO(this->get_logger(), "rt");
+                    }
+                    communicate.call(0x32,data);
                 }
         );
 

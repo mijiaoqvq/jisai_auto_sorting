@@ -36,6 +36,7 @@ set(dependencies
         example_interfaces
         tf2_msgs
         interfaces
+        geometry_msgs
 )
 
 add_executable(arm_node src/arm_node.cpp)

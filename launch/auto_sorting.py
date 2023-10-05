@@ -3,6 +3,7 @@ from launch import LaunchDescription
 from launch_ros.actions import Node
 from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch_xml.launch_description_sources import XMLLaunchDescriptionSource
 from ament_index_python.packages import get_package_share_directory
 
 
@@ -47,11 +48,15 @@ def generate_launch_description():
                 {'model_path': os.path.join(get_package_share_directory('detect'),'best.pt')}
             ]
         ),
-
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource([os.path.join(
                 get_package_share_directory('realsense2_camera'), 'launch'),
                 '/rs_t265_launch.py']),
+        ),
+        IncludeLaunchDescription(
+            XMLLaunchDescriptionSource([os.path.join(
+                get_package_share_directory('rosbridge_server'), 'launch'),
+                '/rosbridge_websocket_launch.xml']),
         ),
     ])
     
