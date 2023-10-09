@@ -176,6 +176,7 @@ public:
                     }
                 }
         );
+        lightPublisher = this->create_publisher<example_interfaces::msg::Int32>("light_change", 10);
         armSerialDataPublisher = this->create_publisher<interfaces::msg::SerialData>("arm_serial", 10);
         chassisDataPublisher = this->create_publisher<interfaces::msg::SerialData>("chassis_serial", 10);
         chassisDataSubscription = this->create_subscription<interfaces::msg::SerialData>(
@@ -245,7 +246,7 @@ public:
                         serialData.id = 0x3f;
                         chassisDataPublisher->publish(serialData);
                         RCLCPP_WARN(this->get_logger(), "ARM PICKING CENTER BALL FINISHED. PILING MOVING!！");
-                    } else if(status == SORT){
+                    } else if (status == SORT) {
                         interfaces::msg::SerialData serialData;
                         serialData.id = 0x3f;
                         chassisDataPublisher->publish(serialData);
@@ -257,10 +258,10 @@ public:
                 "start",
                 10,
                 [this](const example_interfaces::msg::Int32::SharedPtr data) {
-                    if(data->data==0){
+                    if (data->data == 0) {
                         color = RED;
                         RCLCPP_WARN(this->get_logger(), "RED");
-                    }else {
+                    } else {
                         color = BLUE;
                         RCLCPP_WARN(this->get_logger(), "BLUE");
                     }
