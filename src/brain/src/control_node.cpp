@@ -103,7 +103,7 @@ public:
                         case PILING:
                             break;
                         case PLATFORM:
-                            if (!waiting && abs(itemInfo->x - 0.5) < 1) {
+                            if (!waiting && abs(itemInfo->x - 0.75) < 0.1) {
                                 auto cube = [this, &serialData]() {
                                     RCLCPP_WARN(this->get_logger(), "FOUND CUBE！");
                                     waiting = true;
@@ -248,7 +248,14 @@ public:
         startSubscription = this->create_subscription<example_interfaces::msg::Int32>(
                 "start",
                 10,
-                [this](const example_interfaces::msg::Int32::SharedPtr) {
+                [this](const example_interfaces::msg::Int32::SharedPtr data) {
+                    if(data->data==0){
+                        color = RED;
+                        RCLCPP_WARN(this->get_logger(), "RED");
+                    }else {
+                        color = BLUE;
+                        RCLCPP_WARN(this->get_logger(), "BLUE");
+                    }
                     run();
                 }
         );

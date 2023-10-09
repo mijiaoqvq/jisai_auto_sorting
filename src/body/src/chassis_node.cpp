@@ -15,6 +15,7 @@ private:
     rclcpp::Subscription<interfaces::msg::Pose>::SharedPtr poseSubscription;
     rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr ctlSubscription;
     rclcpp::Service<interfaces::srv::DeviceInfo>::SharedPtr service;
+    rclcpp::Publisher<example_interfaces::msg::Int32>::SharedPtr startPublisher;
 
     rclcpp::Subscription<interfaces::msg::SerialData>::SharedPtr serialDataSubscription;
     rclcpp::Publisher<interfaces::msg::SerialData>::SharedPtr serialDataPublisher;
@@ -26,6 +27,11 @@ public:
         auto serviceCallBack = [this](const std::shared_ptr<interfaces::srv::DeviceInfo::Request> req,
                                       const std::shared_ptr<interfaces::srv::DeviceInfo::Response>) {
             RCLCPP_INFO(this->get_logger(), "Received port: " + req->port);
+            communicate.registerCallBack(0x11, [this](const Data& data) {
+                example_interfaces::msg::Int32 flag;
+                flag.data = data.msg[0];
+                startPublisher->publish(flag);
+            });
             communicate.registerCallBack(0x3F, [this](const Data&) {
                 interfaces::msg::SerialData serialData;
                 serialData.id = 0x3F;
@@ -126,6 +132,9 @@ public:
         );
 
         serialDataPublisher = this->create_publisher<interfaces::msg::SerialData>("chassis_data", 10);
+
+        startPublisher = this->create_publisher<example_interfaces::msg::Int32>("start", 10);
+
     }
 };
 
