@@ -41,6 +41,7 @@ private:
     rclcpp::Subscription<example_interfaces::msg::Int32>::SharedPtr startSubscription;
     rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr imageSubscription;
     rclcpp::Subscription<example_interfaces::msg::Int32>::SharedPtr qrInfoSubscription;
+    rclcpp::Publisher<example_interfaces::msg::Int32>::SharedPtr lightPublisher;
     std::array<int, 3> redLow = {0, 115, 80};
     std::array<int, 3> redUp = {15, 255, 255};
     std::array<int, 3> yellowLow = {16, 115, 80};
@@ -182,15 +183,20 @@ public:
                 10,
                 [this](const interfaces::msg::SerialData::SharedPtr) {
                     interfaces::msg::SerialData serialData;
+                    example_interfaces::msg::Int32 lightData;
                     switch (status) {
                         case NONE:
                             RCLCPP_WARN(this->get_logger(), "DISC ARRIVED！");
                             status = DISC;
+                            lightData.data = 0;
+                            lightPublisher->publish(lightData);
                             disc();
                             break;
                         case DISC:
                             RCLCPP_WARN(this->get_logger(), "PLATFORM ARRIVED！");
                             status = PLATFORM;
+                            lightData.data = 1;
+                            lightPublisher->publish(lightData);
                             platform();
                             break;
                         case PLATFORM:
@@ -202,6 +208,8 @@ public:
                             break;
                         case PILING:
                             RCLCPP_WARN(this->get_logger(), "PILING ARRIVED！");
+                            lightData.data = 0;
+                            lightPublisher->publish(lightData);
                             piling();
                             status = DONE;
                             break;

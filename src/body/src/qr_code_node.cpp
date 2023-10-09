@@ -17,6 +17,7 @@ class QrCodeNode : public rclcpp::Node {
 private:
     rclcpp::TimerBase::SharedPtr timer;
     rclcpp::Publisher<example_interfaces::msg::Int32>::SharedPtr publisher;
+    rclcpp::Subscription<example_interfaces::msg::Int32>::SharedPtr subscription;
     rclcpp::Service<interfaces::srv::DeviceInfo>::SharedPtr service;
     std::shared_ptr<serialib> pSerial;
 
@@ -55,6 +56,17 @@ public:
 
         service = this->create_service<interfaces::srv::DeviceInfo>("qr_code_port", serviceCallBack);
 
+        subscription = this->create_subscription<example_interfaces::msg::Int32>(
+                "light_change",
+                10,
+                [this](example_interfaces::msg::Int32::SharedPtr data) {
+                    if(data->data == 0){
+                        pSerial->writeString("S_CMD_03L0");
+                    }else{
+                        pSerial->writeString("S_CMD_03L2");
+                    }
+                }
+        );
     }
 };
 
