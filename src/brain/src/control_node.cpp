@@ -49,9 +49,11 @@ private:
     std::array<int, 3> blueLow = {90, 115, 50};
     std::array<int, 3> blueUp = {120, 255, 255};
 
-    std::array<int, 3> greenLow = {65, 5, 5};
+    std::array<int, 3> greenLow = {65, 10, 10};
     std::array<int, 3> greenUp = {110, 255, 255};
     bool waiting = false;
+    bool turnLeft = false;
+    bool turnRight = false;
 public:
     ControlNode() : Node("control") {
         imageSubscription = this->create_subscription<sensor_msgs::msg::Image>(
@@ -66,14 +68,13 @@ public:
                         return;
                     }
 
-                    if (true) {
+                    if (!waiting) {
                         cv::Mat lineImage;
                         cv::cvtColor(image, lineImage, cv::COLOR_BGR2HSV);
                         cv::Mat line;
                         cv::inRange(lineImage, greenLow, greenUp, line);
 
-                        cv::Mat element = getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5, 5));
-                        cv::morphologyEx(line, line, cv::MORPH_CLOSE, element);
+                        cv::Mat element = getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(11, 11));
                         cv::morphologyEx(line, line, cv::MORPH_OPEN, element);
                         cv::imshow("raw", line);
                         cv::Canny(line, line, 50, 200, 3);
@@ -85,6 +86,39 @@ public:
                         cv::Mat copy = image.clone();
                         for (size_t i = 0; i < lines.size(); i++) {
                             float rho = lines[i][0], theta = lines[i][1];
+                            if (theta > CV_PI / 6 && theta < 5 * CV_PI / 6) {
+                                continue;
+                            }
+
+                            if (!turnRight && theta > CV_PI / 2 && theta < CV_PI / 180 * 178) {
+                                turnRight = true;
+                                serialData.id = 0x32;
+                                serialData.data[2] = 1;
+                                chassisDataPublisher->publish(serialData);
+                            }
+
+                            if (!turnLeft && theta < CV_PI / 2 && theta > CV_PI / 180 * 2) {
+                                turnLeft = true;
+                                serialData.id = 0x32;
+                                serialData.data[2] = -1;
+                                chassisDataPublisher->publish(serialData);
+                            }
+
+                            if (theta < CV_PI / 180 * 2 || theta > CV_PI / 180 * 178) {
+                                if(turnLeft){
+                                    serialData.id = 0x32;
+                                    serialData.data[2] = 1;
+                                    chassisDataPublisher->publish(serialData);
+                                }
+
+                                if(turnRight){
+                                    serialData.id = 0x32;
+                                    serialData.data[2] = -1;
+                                    chassisDataPublisher->publish(serialData);
+                                }
+                                turnRight = false;
+                                turnLeft = false;
+                            }
                             cv::Point pt1, pt2;
                             double a = cos(theta), b = sin(theta);
                             double x0 = a * rho, y0 = b * rho;

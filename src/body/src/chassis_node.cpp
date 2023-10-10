@@ -120,11 +120,11 @@ public:
                         RCLCPP_INFO(this->get_logger(), "right");
                     }
                     if(msg->angular.z > 0){
-                        data.msg[2]+=1;
+                        data.msg[2]-=1;
                         RCLCPP_INFO(this->get_logger(), "lt");
                     }
                     if(msg->angular.z < 0){
-                        data.msg[2]-=1;
+                        data.msg[2]+=1;
                         RCLCPP_INFO(this->get_logger(), "rt");
                     }
                     communicate.call(0x32,data);
