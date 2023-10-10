@@ -90,38 +90,56 @@ public:
                                 continue;
                             }
 
-                            if (!turnRight && theta > CV_PI / 180 * 95) {
-                                turnRight = true;
+                            if (!turnRight && theta > CV_PI / 180 * 93) {
+                                //turnRight = true;
                                 serialData.id = 0x32;
                                 serialData.data[2] = 1;
                                 chassisDataPublisher->publish(serialData);
+                                std::thread th([this](){
+                                    using namespace std::chrono_literals;
+                                    std::this_thread::sleep_for(0.5s);
+                                    interfaces::msg::SerialData serialData1;
+                                    serialData1.id = 0x32;
+                                    serialData1.data[2] = -1;
+                                    chassisDataPublisher->publish(serialData1);
+                                });
+                                th.detach();
                                 break;
                             }
 
-                            if (!turnLeft && theta < CV_PI / 180 * 85) {
-                                turnLeft = true;
+                            if (!turnLeft && theta < CV_PI / 180 * 87) {
+                                //turnLeft = true;
                                 serialData.id = 0x32;
                                 serialData.data[2] = -1;
                                 chassisDataPublisher->publish(serialData);
+                                std::thread th([this](){
+                                    using namespace std::chrono_literals;
+                                    std::this_thread::sleep_for(0.5s);
+                                    interfaces::msg::SerialData serialData1;
+                                    serialData1.id = 0x32;
+                                    serialData1.data[2] = 1;
+                                    chassisDataPublisher->publish(serialData1);
+                                });
+                                th.detach();
                                 break;
                             }
 
-                            if (theta > CV_PI / 180 * 85 && theta < CV_PI / 180 * 95) {
-                                if(turnLeft){
-                                    serialData.id = 0x32;
-                                    serialData.data[2] = 1;
-                                    chassisDataPublisher->publish(serialData);
-                                }
-
-                                if(turnRight){
-                                    serialData.id = 0x32;
-                                    serialData.data[2] = -1;
-                                    chassisDataPublisher->publish(serialData);
-                                }
-                                turnRight = false;
-                                turnLeft = false;
-                                break;
-                            }
+//                            if (theta > CV_PI / 180 * 85 && theta < CV_PI / 180 * 95) {
+//                                if(turnLeft){
+//                                    serialData.id = 0x32;
+//                                    serialData.data[2] = 1;
+//                                    chassisDataPublisher->publish(serialData);
+//                                }
+//
+//                                if(turnRight){
+//                                    serialData.id = 0x32;
+//                                    serialData.data[2] = -1;
+//                                    chassisDataPublisher->publish(serialData);
+//                                }
+//                                turnRight = false;
+//                                turnLeft = false;
+//                                break;
+//                            }
                             cv::Point pt1, pt2;
                             double a = cos(theta), b = sin(theta);
                             double x0 = a * rho, y0 = b * rho;
