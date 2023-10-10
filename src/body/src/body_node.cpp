@@ -278,7 +278,10 @@ public:
             Data data;
 
             arm.testConnect();
+            RCLCPP_WARN(get_logger(),"ARM_CONNECT!");
             chassis.testConnect();
+            RCLCPP_WARN(get_logger(),"CHASSIS_CONNECT!");
+
 
             //wait start
             data = chassis.read();
