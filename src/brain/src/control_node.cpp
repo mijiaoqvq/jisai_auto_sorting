@@ -49,7 +49,7 @@ private:
     std::array<int, 3> blueLow = {90, 115, 50};
     std::array<int, 3> blueUp = {120, 255, 255};
 
-    std::array<int, 3> greenLow = {70, 50, 0};
+    std::array<int, 3> greenLow = {65, 5, 5};
     std::array<int, 3> greenUp = {110, 255, 255};
     bool waiting = false;
 public:
@@ -72,7 +72,7 @@ public:
                         cv::Mat line;
                         cv::inRange(lineImage, greenLow, greenUp, line);
 
-                        cv::Mat element = getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
+                        cv::Mat element = getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(5, 5));
                         cv::morphologyEx(line, line, cv::MORPH_CLOSE, element);
                         cv::morphologyEx(line, line, cv::MORPH_OPEN, element);
                         cv::imshow("raw", line);
