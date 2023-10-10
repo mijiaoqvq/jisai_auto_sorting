@@ -28,21 +28,21 @@ public:
     }
 
     void send(Data data) {
-        hid_write(hidDevice, data.data(), 65);
+        hid_write(hidDevice, data.data(), 64);
     }
 
     Data read() {
-        hid_read(hidDevice, buffer, 65);
+        hid_read(hidDevice, buffer, 64);
         Data data;
-        memcpy(data.data(), buffer, 65);
+        memcpy(data.data(), buffer, 64);
         return data;
     }
 
     Data read_timeout() {
-        int ret = hid_read_timeout(hidDevice, buffer, 65, 5000);
+        int ret = hid_read_timeout(hidDevice, buffer, 64, 5000);
         Data data;
         if (ret) {
-            memcpy(data.data(), buffer, 65);
+            memcpy(data.data(), buffer, 64);
         }
         return data;
     }
