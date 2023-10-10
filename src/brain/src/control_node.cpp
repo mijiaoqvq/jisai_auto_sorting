@@ -86,25 +86,25 @@ public:
                         cv::Mat copy = image.clone();
                         for (size_t i = 0; i < lines.size(); i++) {
                             float rho = lines[i][0], theta = lines[i][1];
-                            if (theta > CV_PI / 6 && theta < 5 * CV_PI / 6) {
+                            if (theta < CV_PI / 3 || theta > 2 * CV_PI / 3) {
                                 continue;
                             }
 
-                            if (!turnRight && theta > CV_PI / 2 && theta < CV_PI / 180 * 178) {
+                            if (!turnRight && theta > CV_PI / 180 * 92) {
                                 turnRight = true;
                                 serialData.id = 0x32;
                                 serialData.data[2] = 1;
                                 chassisDataPublisher->publish(serialData);
                             }
 
-                            if (!turnLeft && theta < CV_PI / 2 && theta > CV_PI / 180 * 2) {
+                            if (!turnLeft && theta < CV_PI / 180 * 88) {
                                 turnLeft = true;
                                 serialData.id = 0x32;
                                 serialData.data[2] = -1;
                                 chassisDataPublisher->publish(serialData);
                             }
 
-                            if (theta < CV_PI / 180 * 2 || theta > CV_PI / 180 * 178) {
+                            if (theta > CV_PI / 180 * 88 && theta < CV_PI / 180 * 92) {
                                 if(turnLeft){
                                     serialData.id = 0x32;
                                     serialData.data[2] = 1;
