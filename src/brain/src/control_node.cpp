@@ -68,7 +68,7 @@ public:
                         return;
                     }
 
-                    if (!waiting) {
+                    if (!waiting && status == PLATFORM) {
                         cv::Mat lineImage;
                         cv::cvtColor(image, lineImage, cv::COLOR_BGR2HSV);
                         cv::Mat line;
@@ -86,11 +86,20 @@ public:
                         cv::Mat copy = image.clone();
                         for (size_t i = 0; i < lines.size(); i++) {
                             float rho = lines[i][0], theta = lines[i][1];
-                            if (theta < CV_PI / 3 || theta > 2 * CV_PI / 3) {
+                            if (theta < CV_PI / 3 || theta > 2 * CV_PI / 3 || rho < ) {
                                 continue;
                             }
 
-                            if (!turnRight && theta > CV_PI / 180 * 93) {
+                            cv::Point pt1, pt2;
+                            double a = cos(theta), b = sin(theta);
+                            double x0 = a * rho, y0 = b * rho;
+                            pt1.x = cvRound(x0 + 1000 * (-b));
+                            pt1.y = cvRound(y0 + 1000 * (a));
+                            pt2.x = cvRound(x0 - 1000 * (-b));
+                            pt2.y = cvRound(y0 - 1000 * (a));
+                            cv::line(copy, pt1, pt2, cv::Scalar(0, 255, 0), 1, cv::LINE_AA);
+
+                            if (theta > CV_PI / 180 * 93) {
                                 //turnRight = true;
                                 serialData.id = 0x32;
                                 serialData.data[2] = 1;
@@ -107,7 +116,7 @@ public:
                                 break;
                             }
 
-                            if (!turnLeft && theta < CV_PI / 180 * 87) {
+                            if (theta < CV_PI / 180 * 87) {
                                 //turnLeft = true;
                                 serialData.id = 0x32;
                                 serialData.data[2] = -1;
@@ -140,14 +149,6 @@ public:
 //                                turnLeft = false;
 //                                break;
 //                            }
-                            cv::Point pt1, pt2;
-                            double a = cos(theta), b = sin(theta);
-                            double x0 = a * rho, y0 = b * rho;
-                            pt1.x = cvRound(x0 + 1000 * (-b));
-                            pt1.y = cvRound(y0 + 1000 * (a));
-                            pt2.x = cvRound(x0 - 1000 * (-b));
-                            pt2.y = cvRound(y0 - 1000 * (a));
-                            cv::line(copy, pt1, pt2, cv::Scalar(0, 255, 0), 1, cv::LINE_AA);
                         }
                         cv::imshow("result", copy);
                     }
