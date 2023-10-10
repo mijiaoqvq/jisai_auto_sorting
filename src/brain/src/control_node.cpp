@@ -95,6 +95,7 @@ public:
                                 serialData.id = 0x32;
                                 serialData.data[2] = 1;
                                 chassisDataPublisher->publish(serialData);
+                                break;
                             }
 
                             if (!turnLeft && theta < CV_PI / 180 * 85) {
@@ -102,6 +103,7 @@ public:
                                 serialData.id = 0x32;
                                 serialData.data[2] = -1;
                                 chassisDataPublisher->publish(serialData);
+                                break;
                             }
 
                             if (theta > CV_PI / 180 * 85 && theta < CV_PI / 180 * 95) {
@@ -118,6 +120,7 @@ public:
                                 }
                                 turnRight = false;
                                 turnLeft = false;
+                                break;
                             }
                             cv::Point pt1, pt2;
                             double a = cos(theta), b = sin(theta);
