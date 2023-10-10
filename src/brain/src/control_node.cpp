@@ -90,21 +90,21 @@ public:
                                 continue;
                             }
 
-                            if (!turnRight && theta > CV_PI / 180 * 92) {
+                            if (!turnRight && theta > CV_PI / 180 * 95) {
                                 turnRight = true;
                                 serialData.id = 0x32;
                                 serialData.data[2] = 1;
                                 chassisDataPublisher->publish(serialData);
                             }
 
-                            if (!turnLeft && theta < CV_PI / 180 * 88) {
+                            if (!turnLeft && theta < CV_PI / 180 * 85) {
                                 turnLeft = true;
                                 serialData.id = 0x32;
                                 serialData.data[2] = -1;
                                 chassisDataPublisher->publish(serialData);
                             }
 
-                            if (theta > CV_PI / 180 * 88 && theta < CV_PI / 180 * 92) {
+                            if (theta > CV_PI / 180 * 85 && theta < CV_PI / 180 * 95) {
                                 if(turnLeft){
                                     serialData.id = 0x32;
                                     serialData.data[2] = 1;
