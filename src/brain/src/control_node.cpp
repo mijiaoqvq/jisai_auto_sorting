@@ -48,6 +48,9 @@ private:
     std::array<int, 3> yellowUp = {40, 255, 255};
     std::array<int, 3> blueLow = {90, 115, 50};
     std::array<int, 3> blueUp = {120, 255, 255};
+
+    std::array<int, 3> greenLow = {70, 52, 36};
+    std::array<int, 3> greenUp = {104, 255, 255};
     bool waiting = false;
 public:
     ControlNode() : Node("control") {
@@ -55,9 +58,6 @@ public:
                 "/arm_camera/img_raw",
                 1,
                 [this](const sensor_msgs::msg::Image::SharedPtr imageMsg) {
-                    if (status != DISC && status != DONE) {
-                        return;
-                    }
                     interfaces::msg::SerialData serialData;
                     cv_bridge::CvImagePtr cvImage;
                     cvImage = cv_bridge::toCvCopy(imageMsg, sensor_msgs::image_encodings::BGR8);
@@ -65,29 +65,59 @@ public:
                     if (image.empty()) {
                         return;
                     }
-                    cv::cvtColor(image, image, cv::COLOR_BGR2HSV);
-                    cv::Mat red, yellow, blue;
-                    cv::inRange(image, redLow, redUp, red);
-                    cv::inRange(image, yellowLow, yellowUp, yellow);
-                    cv::inRange(image, blueLow, blueUp, blue);
-                    cv::imshow("red", red);
-                    cv::imshow("yellow", yellow);
-                    cv::imshow("blue", blue);
-                    cv::waitKey(1);
-                    if (color == RED && (1.0f * cv::countNonZero(red) / image.size().area() > 0.2)) {
-                        serialData.id = 0x72 + ((status == DISC) ? 0 : 2);
-                        serialData.data[0] = 1 + ((status == DISC) ? 0 : 2);
-                        armSerialDataPublisher->publish(serialData);
+
+                    if (true) {
+                        cv::Mat lineImage;
+                        cv::cvtColor(image, lineImage, cv::COLOR_BGR2HSV);
+                        cv::Mat line;
+                        cv::inRange(lineImage, greenLow, greenUp, line);
+                        cv::imshow("raw", line);
+                        cv::Canny(line, line, 50, 200, 3);
+                        cv::imshow("line", line);
+                        cv::waitKey(1);
+                        std::vector<cv::Vec2f> lines;
+                        cv::HoughLines(line, lines, 1, CV_PI / 180, 100);
+
+                        cv::Mat copy = image.clone();
+                        for (size_t i = 0; i < lines.size(); i++) {
+                            float rho = lines[i][0], theta = lines[i][1];
+                            cv::Point pt1, pt2;
+                            double a = cos(theta), b = sin(theta);
+                            double x0 = a * rho, y0 = b * rho;
+                            pt1.x = cvRound(x0 + 1000 * (-b));
+                            pt1.y = cvRound(y0 + 1000 * (a));
+                            pt2.x = cvRound(x0 - 1000 * (-b));
+                            pt2.y = cvRound(y0 - 1000 * (a));
+                            cv::line(copy, pt1, pt2, cv::Scalar(0, 255, 0), 1, cv::LINE_AA);
+                        }
+                        cv::imshow("result", copy);
                     }
-                    if (1.0f * cv::countNonZero(yellow) / image.size().area() > 0.2) {
-                        serialData.id = 0x72 + ((status == DISC) ? 0 : 2);
-                        serialData.data[0] = 2 + ((status == DISC) ? 0 : 10);
-                        armSerialDataPublisher->publish(serialData);
-                    }
-                    if (color == BLUE && (1.0f * cv::countNonZero(blue) / image.size().area() > 0.2)) {
-                        serialData.id = 0x72 + ((status == DISC) ? 0 : 2);
-                        serialData.data[0] = 1 + ((status == DISC) ? 0 : 2);
-                        armSerialDataPublisher->publish(serialData);
+
+                    if (status == DISC || status == DONE) {
+                        cv::cvtColor(image, image, cv::COLOR_BGR2HSV);
+                        cv::Mat red, yellow, blue;
+                        cv::inRange(image, redLow, redUp, red);
+                        cv::inRange(image, yellowLow, yellowUp, yellow);
+                        cv::inRange(image, blueLow, blueUp, blue);
+//                        cv::imshow("red", red);
+//                        cv::imshow("yellow", yellow);
+//                        cv::imshow("blue", blue);
+//                        cv::waitKey(1);
+                        if (color == RED && (1.0f * cv::countNonZero(red) / image.size().area() > 0.2)) {
+                            serialData.id = 0x72 + ((status == DISC) ? 0 : 2);
+                            serialData.data[0] = 1 + ((status == DISC) ? 0 : 2);
+                            armSerialDataPublisher->publish(serialData);
+                        }
+                        if (1.0f * cv::countNonZero(yellow) / image.size().area() > 0.2) {
+                            serialData.id = 0x72 + ((status == DISC) ? 0 : 2);
+                            serialData.data[0] = 2 + ((status == DISC) ? 0 : 10);
+                            armSerialDataPublisher->publish(serialData);
+                        }
+                        if (color == BLUE && (1.0f * cv::countNonZero(blue) / image.size().area() > 0.2)) {
+                            serialData.id = 0x72 + ((status == DISC) ? 0 : 2);
+                            serialData.data[0] = 1 + ((status == DISC) ? 0 : 2);
+                            armSerialDataPublisher->publish(serialData);
+                        }
                     }
                 }
         );
@@ -134,6 +164,10 @@ public:
                                     serialData.id = 0x73;
                                     serialData.data[0] = 2;
                                     armSerialDataPublisher->publish(serialData);
+
+                                    example_interfaces::msg::Int32 lightData;
+                                    lightData.data = 1;
+                                    lightPublisher->publish(lightData);
                                 };
                                 switch (itemInfo->id) {
                                     case RED_BOX:
@@ -196,8 +230,6 @@ public:
                         case DISC:
                             RCLCPP_WARN(this->get_logger(), "PLATFORM ARRIVED！");
                             status = PLATFORM;
-                            lightData.data = 1;
-                            lightPublisher->publish(lightData);
                             platform();
                             break;
                         case PLATFORM:
@@ -274,6 +306,10 @@ public:
                 10,
                 [this](const example_interfaces::msg::Int32::SharedPtr id) {
                     if (waiting) {
+                        example_interfaces::msg::Int32 lightData;
+                        lightData.data = 0;
+                        lightPublisher->publish(lightData);
+
                         interfaces::msg::SerialData serialData;
                         serialData.id = 0x73;
                         if (id->data == 1) {
