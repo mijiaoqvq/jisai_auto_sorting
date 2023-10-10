@@ -49,8 +49,8 @@ private:
     std::array<int, 3> blueLow = {90, 115, 50};
     std::array<int, 3> blueUp = {120, 255, 255};
 
-    std::array<int, 3> greenLow = {70, 52, 36};
-    std::array<int, 3> greenUp = {104, 255, 255};
+    std::array<int, 3> greenLow = {70, 50, 0};
+    std::array<int, 3> greenUp = {110, 255, 255};
     bool waiting = false;
 public:
     ControlNode() : Node("control") {
@@ -71,6 +71,10 @@ public:
                         cv::cvtColor(image, lineImage, cv::COLOR_BGR2HSV);
                         cv::Mat line;
                         cv::inRange(lineImage, greenLow, greenUp, line);
+
+                        cv::Mat element = getStructuringElement(cv::MORPH_RECT, cv::Size(3, 3));
+                        cv::morphologyEx(line, line, cv::MORPH_CLOSE, element);
+                        cv::morphologyEx(line, line, cv::MORPH_OPEN, element);
                         cv::imshow("raw", line);
                         cv::Canny(line, line, 50, 200, 3);
                         cv::imshow("line", line);
