@@ -65,7 +65,12 @@ public:
                     return;
                 }
 
-                cv::undistort(image, processed_image, k, d);
+                try {
+                    cv::undistort(image, processed_image, k, d);
+                } catch (...) {
+                    continue;
+                }
+
 
                 cvImg.encoding = "bgr8";
                 cvImg.header.stamp = this->now();
