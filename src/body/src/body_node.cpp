@@ -49,6 +49,10 @@ private:
 
     bool waiting;
 
+    bool redWait;
+    bool yellowWait;
+    bool blueWait;
+
     Communication arm;
     Communication chassis;
     Communication qrCode;
@@ -252,23 +256,38 @@ public:
 //                        cv::imshow("yellow", yellow);
 //                        cv::imshow("blue", blue);
 //                        cv::waitKey(1);
-                        if (color == RED && (1.0f * cv::countNonZero(red) / image.size().area() > 0.2)) {
+                        if (!redWait && color == RED && (1.0f * cv::countNonZero(red) / image.size().area() > 0.2)) {
                             Data data;
                             data[0] = 0x01;
                             data[1] = 0x01;
                             arm.send(data);
+                            redWait = true;
                         }
-                        if (1.0f * cv::countNonZero(yellow) / image.size().area() > 0.2) {
+                        if (!yellowWait && 1.0f * cv::countNonZero(yellow) / image.size().area() > 0.2) {
                             Data data;
                             data[0] = 0x01;
                             data[1] = 0x02;
                             arm.send(data);
+                            yellowWait = true;
                         }
-                        if (color == BLUE && (1.0f * cv::countNonZero(blue) / image.size().area() > 0.2)) {
+                        if (!blueWait && color == BLUE && (1.0f * cv::countNonZero(blue) / image.size().area() > 0.2)) {
                             Data data;
                             data[0] = 0x01;
                             data[1] = 0x01;
                             arm.send(data);
+                            blueWait = true;
+                        }
+
+                        if(1.0f * cv::countNonZero(red) / image.size().area() <= 0.2){
+                            redWait = false;
+                        }
+
+                        if(1.0f * cv::countNonZero(yellow) / image.size().area() <= 0.2){
+                            yellowWait = false;
+                        }
+
+                        if(1.0f * cv::countNonZero(blue) / image.size().area() <= 0.2){
+                            blueWait = false;
                         }
                     }
                 }
