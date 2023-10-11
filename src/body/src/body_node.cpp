@@ -69,8 +69,7 @@ public:
                 "item_info",
                 10,
                 [this](const interfaces::msg::ItemInfo::SharedPtr itemInfo) {
-                    if (status == PILLING) {
-
+                    if (status == PLATFORM) {
                         if (!waiting && abs(itemInfo->x - 0.75) < 0.1) {
                             auto cube = [this]() {
                                 RCLCPP_WARN(this->get_logger(), "FOUND CUBE！");
