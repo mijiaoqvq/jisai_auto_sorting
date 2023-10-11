@@ -349,8 +349,6 @@ public:
             chassis.read();
             RCLCPP_WARN(get_logger(),"PLATFORM END");
             status = PILLING;
-            data[0] = 0x31;
-            chassis.send(data);
 
             data[0] = 0x03;
             data[1] = 0x00;
@@ -366,7 +364,7 @@ public:
             arm.read();
             RCLCPP_WARN(get_logger(),"ARM POSITION OK");
 
-            data[0] = 0x31;
+            data[0] = 0x3F;
             chassis.send(data);
 
             //wait for arriving tube pilling
