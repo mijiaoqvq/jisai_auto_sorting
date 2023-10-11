@@ -8,15 +8,14 @@ int main() {
     Communication communication;
     int hid, pid;
     //std::cin >> hid >> pid;
-    hid = 0x114;
-    pid = 0x514;
+    hid = 0x26f1;
+    pid = 0x8803;
     communication.open(hid, pid);
     while (true) {
-        Data data = {};
-        int a,b;
-        std::cin >> a >> b;
-        data[0] = a;
-        data[1] = b;
-        communication.send(data);
+        Data data = communication.read();
+        for(auto& d : data){
+            std::cout<<(int)d<<" ";
+        }
+        std::cout<<std::endl;
     }
 }

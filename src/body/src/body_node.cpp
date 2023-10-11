@@ -115,12 +115,17 @@ public:
                                 data[1] = 0x02;
                                 arm.send(data);
 
+                                qrCode.lightOn();
+
                                 data = qrCode.read_timeout();
-                                if (!((data[1] == 'R') ^ (color == RED))) {
+                                qrCode.lightOff();
+                                if (!((data[2] == 'R') ^ (color == RED))) {
+                                    RCLCPP_WARN(this->get_logger(), "COLOR RIGHT");
                                     data[0] = 0x02;
                                     data[1] = 0x04;
                                     arm.send(data);
                                 }else{
+                                    RCLCPP_WARN(this->get_logger(), "COLOR WRONG");
                                     data[0] = 0x02;
                                     data[1] = 0x03;
                                     arm.send(data);

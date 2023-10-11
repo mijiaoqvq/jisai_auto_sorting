@@ -52,6 +52,28 @@ public:
         data[0] = 0xFF;
         send(data);
     }
+
+    void lightOn() {
+        std::string cmd = "S_CMD_03L2";
+
+        Data data = {};
+        data[0] = 0x04;
+        data[1] = strlen(cmd.c_str());
+        memcpy(data.data() + 2, cmd.data(), data[1]);
+
+        send(data);
+    }
+
+    void lightOff(){
+        std::string cmd = "S_CMD_03L2";
+
+        Data data = {};
+        data[0] = 0x04;
+        data[1] = strlen(cmd.c_str());
+        memcpy(data.data() + 2, cmd.data(), data[1]);
+
+        send(data);
+    }
 };
 
 
