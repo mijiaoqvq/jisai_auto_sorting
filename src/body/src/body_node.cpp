@@ -75,7 +75,7 @@ public:
                                 data[0] = 0x31;
                                 chassis.send(data);
 
-                                data[0] = 0x01;
+                                data[0] = 0x02;
                                 data[1] = 0x00;
                                 arm.send(data);
 
@@ -91,7 +91,7 @@ public:
                                 data[0] = 0x31;
                                 chassis.send(data);
 
-                                data[0] = 0x01;
+                                data[0] = 0x02;
                                 data[1] = 0x01;
                                 arm.send(data);
 
@@ -107,17 +107,17 @@ public:
                                 data[0] = 0x31;
                                 chassis.send(data);
 
-                                data[0] = 0x01;
+                                data[0] = 0x02;
                                 data[1] = 0x02;
                                 arm.send(data);
 
                                 data = qrCode.read_timeout();
-                                if (!((data[0] == 'R') ^ (color == RED))) {
-                                    data[0] = 0x01;
+                                if (!((data[1] == 'R') ^ (color == RED))) {
+                                    data[0] = 0x02;
                                     data[1] = 0x04;
                                     arm.send(data);
                                 }else{
-                                    data[0] = 0x01;
+                                    data[0] = 0x02;
                                     data[1] = 0x03;
                                     arm.send(data);
                                 }
@@ -254,19 +254,19 @@ public:
 //                        cv::waitKey(1);
                         if (color == RED && (1.0f * cv::countNonZero(red) / image.size().area() > 0.2)) {
                             Data data;
-                            data[0] = 0x00;
+                            data[0] = 0x01;
                             data[1] = 0x01;
                             arm.send(data);
                         }
                         if (1.0f * cv::countNonZero(yellow) / image.size().area() > 0.2) {
                             Data data;
-                            data[0] = 0x00;
+                            data[0] = 0x01;
                             data[1] = 0x02;
                             arm.send(data);
                         }
                         if (color == BLUE && (1.0f * cv::countNonZero(blue) / image.size().area() > 0.2)) {
                             Data data;
-                            data[0] = 0x00;
+                            data[0] = 0x01;
                             data[1] = 0x01;
                             arm.send(data);
                         }
@@ -298,7 +298,7 @@ public:
             RCLCPP_WARN(get_logger(),"DISC ARRIVED");
             status = DISC;
 
-            data[0] = 0x00;
+            data[0] = 0x01;
             data[1] = 0x00;
             arm.send(data);
 
@@ -306,7 +306,7 @@ public:
             std::this_thread::sleep_for(30s);
             RCLCPP_WARN(get_logger(),"DISC END");
 
-            data[0] = 0x00;
+            data[0] = 0x01;
             data[1] = 0x03;
             arm.send(data);
 
@@ -328,14 +328,14 @@ public:
             data[0] = 0x31;
             chassis.send(data);
 
-            data[0] = 0x02;
+            data[0] = 0x03;
             data[1] = 0x00;
             arm.send(data);
 
             chassis.read();
             RCLCPP_WARN(get_logger(),"PILLING ARRIVED");
 
-            data[0] = 0x02;
+            data[0] = 0x03;
             data[1] = 0x01;
             arm.send(data);
 
@@ -350,7 +350,7 @@ public:
             RCLCPP_WARN(get_logger(),"SORT ARRIVED");
             status = SORTING;
 
-            data[0] = 0x03;
+            data[0] = 0x04;
             data[1] = 0x00;
             arm.send(data);
 
