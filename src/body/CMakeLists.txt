@@ -55,6 +55,15 @@ target_include_directories(body_node PUBLIC
 install(TARGETS body_node
         DESTINATION lib/${PROJECT_NAME})
 
+add_executable(test_usb_node src/test_usb.cpp)
+target_link_libraries(test_usb_node ${libraries})
+target_include_directories(test_usb_node PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+        $<INSTALL_INTERFACE:include>)
+
+install(TARGETS test_usb_node
+        DESTINATION lib/${PROJECT_NAME})
+
 if (BUILD_TESTING)
     find_package(ament_lint_auto REQUIRED)
     # the following line skips the linter which checks for copyrights

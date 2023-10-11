@@ -287,12 +287,15 @@ public:
             data = chassis.read();
             if (data[0] == 0) {
                 color = RED;
+                RCLCPP_WARN(get_logger(),"RED");
             } else {
                 color = BLUE;
+                RCLCPP_WARN(get_logger(),"BLUE");
             }
 
             //wait for arriving disc
             chassis.read();
+            RCLCPP_WARN(get_logger(),"DISC ARRIVED");
             status = DISC;
 
             data[0] = 0x00;
@@ -301,6 +304,7 @@ public:
 
             //wait disc end
             std::this_thread::sleep_for(30s);
+            RCLCPP_WARN(get_logger(),"DISC END");
 
             data[0] = 0x00;
             data[1] = 0x03;
@@ -311,6 +315,7 @@ public:
 
             //wait for arriving platform
             chassis.read();
+            RCLCPP_WARN(get_logger(),"PLATFORM ARRIVED");
             status = PLATFORM;
 
             data[0] = 0x31;
@@ -318,6 +323,7 @@ public:
 
             //wait for platform end
             chassis.read();
+            RCLCPP_WARN(get_logger(),"PLATFORM END");
             status = PILLING;
             data[0] = 0x31;
             chassis.send(data);
@@ -327,18 +333,21 @@ public:
             arm.send(data);
 
             chassis.read();
+            RCLCPP_WARN(get_logger(),"PILLING ARRIVED");
 
             data[0] = 0x02;
             data[1] = 0x01;
             arm.send(data);
 
             arm.read();
+            RCLCPP_WARN(get_logger(),"ARM POSITION OK");
 
             data[0] = 0x31;
             chassis.send(data);
 
             //wait for arriving tube pilling
             chassis.read();
+            RCLCPP_WARN(get_logger(),"SORT ARRIVED");
             status = SORTING;
 
             data[0] = 0x03;
@@ -347,6 +356,7 @@ public:
 
             //wait for arm finish
             arm.read();
+            RCLCPP_WARN(get_logger(),"ARM SORTED");
 
             data[0] = 0x3F;
             chassis.send(data);
