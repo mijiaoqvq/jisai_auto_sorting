@@ -53,6 +53,8 @@ private:
     bool yellowWait;
     bool blueWait;
 
+    uint8_t qRdata;
+
     Communication arm;
     Communication chassis;
     Communication qrCode;
@@ -115,21 +117,20 @@ public:
                                 arm.send(data);
 
                                 qrCode.lightOn();
-
-                                data = qrCode.read_timeout();
+                                std::this_thread::sleep_for(5s);
                                 qrCode.lightOff();
-                                if (!((data[2] == 'R') ^ (color == RED))) {
+                                if (!((qRdata == 'R') ^ (color == RED))) {
                                     RCLCPP_WARN(this->get_logger(), "COLOR RIGHT");
                                     data[0] = 0x02;
                                     data[1] = 0x04;
                                     arm.send(data);
-                                }else{
+                                } else {
                                     RCLCPP_WARN(this->get_logger(), "COLOR WRONG");
                                     data[0] = 0x02;
                                     data[1] = 0x03;
                                     arm.send(data);
                                 }
-
+                                qRdata = 0;
                                 arm.read();
                                 waiting = false;
                                 data[0] = 0x31;
@@ -282,15 +283,15 @@ public:
                             blueWait = true;
                         }
 
-                        if(1.0f * cv::countNonZero(red) / image.size().area() <= 0.2){
+                        if (1.0f * cv::countNonZero(red) / image.size().area() <= 0.2) {
                             redWait = false;
                         }
 
-                        if(1.0f * cv::countNonZero(yellow) / image.size().area() <= 0.2){
+                        if (1.0f * cv::countNonZero(yellow) / image.size().area() <= 0.2) {
                             yellowWait = false;
                         }
 
-                        if(1.0f * cv::countNonZero(blue) / image.size().area() <= 0.2){
+                        if (1.0f * cv::countNonZero(blue) / image.size().area() <= 0.2) {
                             blueWait = false;
                         }
                     }
@@ -301,24 +302,24 @@ public:
             Data data;
 
             arm.testConnect();
-            RCLCPP_WARN(get_logger(),"ARM_CONNECT!");
+            RCLCPP_WARN(get_logger(), "ARM_CONNECT!");
             chassis.testConnect();
-            RCLCPP_WARN(get_logger(),"CHASSIS_CONNECT!");
+            RCLCPP_WARN(get_logger(), "CHASSIS_CONNECT!");
 
 
             //wait start
             data = chassis.read();
             if (data[0] == 0) {
                 color = RED;
-                RCLCPP_WARN(get_logger(),"RED");
+                RCLCPP_WARN(get_logger(), "RED");
             } else {
                 color = BLUE;
-                RCLCPP_WARN(get_logger(),"BLUE");
+                RCLCPP_WARN(get_logger(), "BLUE");
             }
 
             //wait for arriving disc
             chassis.read();
-            RCLCPP_WARN(get_logger(),"DISC ARRIVED");
+            RCLCPP_WARN(get_logger(), "DISC ARRIVED");
             status = DISC;
 
             data[0] = 0x01;
@@ -327,7 +328,7 @@ public:
 
             //wait disc end
             std::this_thread::sleep_for(30s);
-            RCLCPP_WARN(get_logger(),"DISC END");
+            RCLCPP_WARN(get_logger(), "DISC END");
 
             data[0] = 0x01;
             data[1] = 0x03;
@@ -338,7 +339,7 @@ public:
 
             //wait for arriving platform
             chassis.read();
-            RCLCPP_WARN(get_logger(),"PLATFORM ARRIVED");
+            RCLCPP_WARN(get_logger(), "PLATFORM ARRIVED");
             status = PLATFORM;
 
             data[0] = 0x31;
@@ -346,7 +347,7 @@ public:
 
             //wait for platform end
             chassis.read();
-            RCLCPP_WARN(get_logger(),"PLATFORM END");
+            RCLCPP_WARN(get_logger(), "PLATFORM END");
             status = PILLING;
 
             data[0] = 0x03;
@@ -354,21 +355,21 @@ public:
             arm.send(data);
 
             chassis.read();
-            RCLCPP_WARN(get_logger(),"PILLING ARRIVED");
+            RCLCPP_WARN(get_logger(), "PILLING ARRIVED");
 
             data[0] = 0x03;
             data[1] = 0x01;
             arm.send(data);
 
             arm.read();
-            RCLCPP_WARN(get_logger(),"ARM POSITION OK");
+            RCLCPP_WARN(get_logger(), "ARM POSITION OK");
 
             data[0] = 0x3F;
             chassis.send(data);
 
             //wait for arriving tube pilling
             chassis.read();
-            RCLCPP_WARN(get_logger(),"SORT ARRIVED");
+            RCLCPP_WARN(get_logger(), "SORT ARRIVED");
             status = SORTING;
 
             data[0] = 0x04;
@@ -377,13 +378,23 @@ public:
 
             //wait for arm finish
             arm.read();
-            RCLCPP_WARN(get_logger(),"ARM SORTED");
+            RCLCPP_WARN(get_logger(), "ARM SORTED");
 
             data[0] = 0x3F;
             chassis.send(data);
         });
 
         th.detach();
+
+        std::thread th1([this]() {
+            Data data;
+            data = qrCode.read_timeout();
+            if (data[2] != 0) {
+                qRdata = data[2];
+            }
+        });
+
+        th1.detach();
     }
 
 };
