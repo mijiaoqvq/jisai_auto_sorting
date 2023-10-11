@@ -65,7 +65,7 @@ public:
     }
 
     void lightOff(){
-        std::string cmd = "S_CMD_03L2";
+        std::string cmd = "S_CMD_03L0";
 
         Data data = {};
         data[0] = 0x04;
